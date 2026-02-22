@@ -1,4 +1,4 @@
-import { influxDB, writeData } from '../src/influx';
+import { influxDB, writeData, queryHistory } from '../src/influx';
 
 // Mock the InfluxDB client and WriteApi
 jest.mock('@influxdata/influxdb-client', () => {
@@ -6,10 +6,16 @@ jest.mock('@influxdata/influxdb-client', () => {
     writePoint: jest.fn(),
     flush: jest.fn().mockResolvedValue(undefined),
   };
+  const mQueryApi = {
+    queryRows: jest.fn().mockImplementation((query, callbacks) => {
+      callbacks.next({}, { toObject: () => ({}) });
+      callbacks.complete();
+    }),
+  };
   return {
     InfluxDB: jest.fn().mockImplementation(() => ({
       getWriteApi: jest.fn().mockReturnValue(mWriteApi),
-      getQueryApi: jest.fn(),
+      getQueryApi: jest.fn().mockReturnValue(mQueryApi),
     })),
     Point: jest.fn().mockImplementation((measurement) => ({
       tag: jest.fn().mockReturnThis(),
@@ -32,5 +38,10 @@ describe('InfluxDB Module', () => {
     
     // Check if WriteApi.writePoint was called indirectly through the mocked Point
     // Since we're using mocks, we just want to ensure it doesn't throw and matches the logic.
+  });
+
+  it('should query history', async () => {
+    const data = await queryHistory('10', '1h');
+    expect(Array.isArray(data)).toBe(true);
   });
 });

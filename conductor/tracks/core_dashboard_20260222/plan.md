@@ -10,7 +10,7 @@
     - [ ] Set up local InfluxDB instance (Docker or local install)
     - [ ] Write Tests: Verify InfluxDB connection and bucket creation
     - [ ] Implement: Database connection module
-- [ ] Task: Modbus Polling Engine
+- [~] Task: Modbus Polling Engine
     - [ ] Write Tests: Mock Modbus device and verify polling logic
     - [ ] Implement: Modbus client wrapper (connect, read registers)
     - [ ] Implement: Polling loop (1Hz) for 6 devices

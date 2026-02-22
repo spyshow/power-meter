@@ -18,7 +18,7 @@
 - [x] Task: Conductor - User Manual Verification 'Environment Setup & Backend Ingestion' (Protocol in workflow.md) [6eff876]
 
 ## Phase 2: Backend API
-- [ ] Task: Devices Endpoint
+- [~] Task: Devices Endpoint
     - [ ] Write Tests: GET /devices returns list of 6 configured devices
     - [ ] Implement: API endpoint to serve device metadata
 - [ ] Task: Real-time Data Endpoint (SSE/WebSockets)

@@ -1,28 +1,18 @@
 import request from 'supertest';
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
+import { app } from '../src/index';
 
-// We could refactor index.ts to export the app for testing, but let's just test the logic for now or mock the express setup.
-// For now, I'll just write a test that mimics the index.ts logic since it's a small app.
-
-const createApp = () => {
-  dotenv.config();
-  const app = express();
-  app.use(cors());
-  app.use(express.json());
-  app.get('/health', (req, res) => {
-    res.json({ status: 'ok' });
-  });
-  return app;
-};
-
-describe('API Health', () => {
-  const app = createApp();
-
+describe('API Routes', () => {
   it('should return ok on /health', async () => {
     const response = await request(app).get('/health');
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ status: 'ok' });
+  });
+
+  it('should return list of 6 devices on /devices', async () => {
+    const response = await request(app).get('/devices');
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(6);
+    expect(response.body[0]).toHaveProperty('id');
+    expect(response.body[0]).toHaveProperty('name');
   });
 });

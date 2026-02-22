@@ -6,7 +6,7 @@
     - [ ] Install dependencies (NestJS/Express, InfluxDB client, modbus-serial, dotenv)
     - [ ] Configure TypeScript and ESLint/Prettier
     - [ ] Set up `.env` for PAS600 credentials and `.gitignore` to exclude it
-- [ ] Task: InfluxDB Setup
+- [~] Task: InfluxDB Setup
     - [ ] Set up local InfluxDB instance (Docker or local install)
     - [ ] Write Tests: Verify InfluxDB connection and bucket creation
     - [ ] Implement: Database connection module

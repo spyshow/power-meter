@@ -1,6 +1,6 @@
 # Implementation Plan - Core Dashboard with Real-time Modbus Integration
 
-## Phase 1: Environment Setup & Backend Ingestion
+## Phase 1: Environment Setup & Backend Ingestion [checkpoint: 6eff876]
 - [x] Task: Project Initialization [f9e6d85]
     - [ ] Initialize Node.js project (package.json)
     - [ ] Install dependencies (NestJS/Express, InfluxDB client, modbus-serial, dotenv)
@@ -15,7 +15,7 @@
     - [ ] Implement: Modbus client wrapper (connect, read registers)
     - [ ] Implement: Polling loop (1Hz) for 6 devices
     - [ ] Implement: Data write to InfluxDB
-- [~] Task: Conductor - User Manual Verification 'Environment Setup & Backend Ingestion' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Environment Setup & Backend Ingestion' (Protocol in workflow.md) [6eff876]
 
 ## Phase 2: Backend API
 - [ ] Task: Devices Endpoint

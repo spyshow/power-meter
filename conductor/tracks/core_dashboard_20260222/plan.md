@@ -1,10 +1,11 @@
 # Implementation Plan - Core Dashboard with Real-time Modbus Integration
 
 ## Phase 1: Environment Setup & Backend Ingestion
-- [ ] Task: Project Initialization
+- [~] Task: Project Initialization
     - [ ] Initialize Node.js project (package.json)
-    - [ ] Install dependencies (NestJS/Express, InfluxDB client, modbus-serial)
+    - [ ] Install dependencies (NestJS/Express, InfluxDB client, modbus-serial, dotenv)
     - [ ] Configure TypeScript and ESLint/Prettier
+    - [ ] Set up `.env` for PAS600 credentials and `.gitignore` to exclude it
 - [ ] Task: InfluxDB Setup
     - [ ] Set up local InfluxDB instance (Docker or local install)
     - [ ] Write Tests: Verify InfluxDB connection and bucket creation

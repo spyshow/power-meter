@@ -8,6 +8,7 @@ This track focuses on building the MVP (Minimum Viable Product) of the Modbus Da
 ### 2.1 Data Ingestion (Backend)
 - **Modbus Connectivity:**
   - Connect to PAS600 Gateway at IP `172.16.0.80` on port `502`.
+  - Credentials: Securely stored in `.env` (`PAS600_USERNAME`, `PAS600_PASSWORD`).
   - Poll 6 devices with Modbus IDs: `10, 20, 30, 40, 50, 60`.
   - Polling frequency: 1 second (1Hz).
   - Protocol: Modbus TCP.

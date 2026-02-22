@@ -33,7 +33,7 @@
 - [x] Task: Refine & Ant Design Setup [51447ae]
     - [ ] Initialize Refine project
     - [ ] Configure Ant Design theme (Enterprise Blue)
-- [ ] Task: Device Cards Component
+- [~] Task: Device Cards Component
     - [ ] Write Tests: Component renders correctly with mock data
     - [ ] Implement: Card component showing Voltage, Amps, KVA
     - [ ] Implement: Grid layout for 6 devices

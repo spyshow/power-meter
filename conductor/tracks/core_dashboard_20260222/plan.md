@@ -30,7 +30,7 @@
 - [x] Task: Conductor - User Manual Verification 'Backend API' (Protocol in workflow.md) [b68d892]
 
 ## Phase 3: Frontend Dashboard
-- [ ] Task: Refine & Ant Design Setup
+- [~] Task: Refine & Ant Design Setup
     - [ ] Initialize Refine project
     - [ ] Configure Ant Design theme (Enterprise Blue)
 - [ ] Task: Device Cards Component

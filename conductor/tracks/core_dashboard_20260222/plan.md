@@ -15,7 +15,7 @@
     - [ ] Implement: Modbus client wrapper (connect, read registers)
     - [ ] Implement: Polling loop (1Hz) for 6 devices
     - [ ] Implement: Data write to InfluxDB
-- [ ] Task: Conductor - User Manual Verification 'Environment Setup & Backend Ingestion' (Protocol in workflow.md)
+- [~] Task: Conductor - User Manual Verification 'Environment Setup & Backend Ingestion' (Protocol in workflow.md)
 
 ## Phase 2: Backend API
 - [ ] Task: Devices Endpoint

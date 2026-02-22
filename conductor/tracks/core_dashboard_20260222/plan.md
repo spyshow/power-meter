@@ -21,7 +21,7 @@
 - [x] Task: Devices Endpoint [d1b3f2e]
     - [ ] Write Tests: GET /devices returns list of 6 configured devices
     - [ ] Implement: API endpoint to serve device metadata
-- [ ] Task: Real-time Data Endpoint (SSE/WebSockets)
+- [~] Task: Real-time Data Endpoint (SSE/WebSockets)
     - [ ] Write Tests: Connect to stream and receive updates
     - [ ] Implement: Server-Sent Events (SSE) or WebSocket gateway for real-time data
 - [ ] Task: Historical Data Endpoint

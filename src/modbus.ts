@@ -1,6 +1,7 @@
 import ModbusRTU from 'modbus-serial';
 import dotenv from 'dotenv';
 import { writeData, flushData } from './influx';
+import { emitDeviceUpdate } from './events';
 
 dotenv.config();
 
@@ -46,6 +47,9 @@ export const pollDevice = async (id: number) => {
     const kva = await readFloat(REG_KVA_TOT);
 
     console.log(`Device ${id}: ${voltage}V, ${current}A, ${kva}kVA`);
+
+    // Emit real-time update
+    emitDeviceUpdate(id, { voltage, current, kva });
 
     // Write to InfluxDB
     writeData('power_consumption', { device_id: id.toString() }, { voltage, current, kva });

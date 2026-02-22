@@ -38,3 +38,26 @@ export const flushData = async () => {
     console.error('Error flushing data to InfluxDB:', error);
   }
 };
+
+export const queryHistory = (deviceId: string, range: string = '1h'): Promise<any[]> => {
+  const query = `from(bucket: "${bucket}")
+    |> range(start: -${range})
+    |> filter(fn: (r) => r["_measurement"] == "power_consumption")
+    |> filter(fn: (r) => r["device_id"] == "${deviceId}")
+    |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")`;
+
+  return new Promise((resolve, reject) => {
+    const results: any[] = [];
+    queryApi.queryRows(query, {
+      next(row, tableMeta) {
+        results.push(tableMeta.toObject(row));
+      },
+      error(error) {
+        reject(error);
+      },
+      complete() {
+        resolve(results);
+      },
+    });
+  });
+};

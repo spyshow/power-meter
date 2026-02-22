@@ -24,7 +24,7 @@
 - [x] Task: Real-time Data Endpoint (SSE/WebSockets) [89bd8f0]
     - [ ] Write Tests: Connect to stream and receive updates
     - [ ] Implement: Server-Sent Events (SSE) or WebSocket gateway for real-time data
-- [ ] Task: Historical Data Endpoint
+- [~] Task: Historical Data Endpoint
     - [ ] Write Tests: GET /history returns timeseries data from InfluxDB
     - [ ] Implement: API endpoint to query InfluxDB with time ranges
 - [ ] Task: Conductor - User Manual Verification 'Backend API' (Protocol in workflow.md)

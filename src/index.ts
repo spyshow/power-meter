@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { DEVICES } from './devices';
 import { eventBus } from './events';
+import { queryHistory } from './influx';
 
 dotenv.config();
 
@@ -35,6 +36,20 @@ app.get('/events', (req, res) => {
   req.on('close', () => {
     eventBus.off('update', onUpdate);
   });
+});
+
+app.get('/history', async (req, res) => {
+  const { deviceId, range } = req.query;
+  if (!deviceId) {
+    return res.status(400).json({ error: 'deviceId is required' });
+  }
+
+  try {
+    const data = await queryHistory(deviceId as string, (range as string) || '1h');
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Error querying history' });
+  }
 });
 
 export { app };

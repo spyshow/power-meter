@@ -17,7 +17,7 @@
     - [ ] Implement: Data write to InfluxDB
 - [x] Task: Conductor - User Manual Verification 'Environment Setup & Backend Ingestion' (Protocol in workflow.md) [6eff876]
 
-## Phase 2: Backend API
+## Phase 2: Backend API [checkpoint: b68d892]
 - [x] Task: Devices Endpoint [d1b3f2e]
     - [ ] Write Tests: GET /devices returns list of 6 configured devices
     - [ ] Implement: API endpoint to serve device metadata
@@ -27,7 +27,7 @@
 - [x] Task: Historical Data Endpoint [5912694]
     - [ ] Write Tests: GET /history returns timeseries data from InfluxDB
     - [ ] Implement: API endpoint to query InfluxDB with time ranges
-- [ ] Task: Conductor - User Manual Verification 'Backend API' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Backend API' (Protocol in workflow.md) [b68d892]
 
 ## Phase 3: Frontend Dashboard
 - [ ] Task: Refine & Ant Design Setup

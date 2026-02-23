@@ -29,7 +29,7 @@ const App = () => {
           <Routes>
             <Route
               element={
-                <ThemedLayoutV2 title={{ text: 'Modbus Dashboard' }}>
+                <ThemedLayoutV2 Title={() => <div>Modbus Dashboard</div>}>
                   <Outlet />
                 </ThemedLayoutV2>
               }

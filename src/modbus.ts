@@ -16,21 +16,27 @@ const REG_CURRENT_AVG = 3000 - 1; // 1-based to 0-based
 const REG_VOLTAGE_LL_AVG = 3028 - 1;
 const REG_KVA_TOT = 3060 - 1;
 
+let isConnected = false;
+
 export const connectModbus = async () => {
+  if (isConnected) return;
+  
   try {
     await client.connectTCP(PAS600_IP, { port: PAS600_PORT });
-    client.setID(1); // Default ID for gateway, will be changed per poll
+    client.setID(1);
     client.setTimeout(1000);
+    isConnected = true;
     console.log(`Connected to PAS600 at ${PAS600_IP}:${PAS600_PORT}`);
   } catch (error) {
-    console.error('Error connecting to Modbus:', error);
+    isConnected = false;
+    console.error('Error connecting to Modbus:', error instanceof Error ? error.message : error);
+    // Retry connection after 5 seconds
+    setTimeout(connectModbus, 5000);
   }
 };
 
 const readFloat = async (address: number): Promise<number> => {
   const result = await client.readHoldingRegisters(address, 2);
-  // Modbus registers are 16-bit. Float32 is 32-bit (2 registers).
-  // Assuming big-endian (typical for Schneider)
   const buffer = Buffer.alloc(4);
   buffer.writeUInt16BE(result.data[0], 0);
   buffer.writeUInt16BE(result.data[1], 2);
@@ -38,23 +44,30 @@ const readFloat = async (address: number): Promise<number> => {
 };
 
 export const pollDevice = async (id: number) => {
+  if (!isConnected) {
+    console.warn(`Skipping poll for device ${id}: Not connected to gateway`);
+    return;
+  }
+  
   try {
     client.setID(id);
     
-    // Read Current, Voltage, KVA
     const current = await readFloat(REG_CURRENT_AVG);
     const voltage = await readFloat(REG_VOLTAGE_LL_AVG);
     const kva = await readFloat(REG_KVA_TOT);
 
-    console.log(`Device ${id}: ${voltage}V, ${current}A, ${kva}kVA`);
+    console.log(`Device ${id}: ${voltage.toFixed(1)}V, ${current.toFixed(2)}A, ${kva.toFixed(2)}kVA`);
 
-    // Emit real-time update
     emitDeviceUpdate(id, { voltage, current, kva });
-
-    // Write to InfluxDB
     writeData('power_consumption', { device_id: id.toString() }, { voltage, current, kva });
   } catch (error) {
-    console.error(`Error polling device ${id}:`, error);
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error(`Error polling device ${id}:`, msg);
+    
+    if (msg.includes('ECONN') || msg.includes('Port Not Open') || msg.includes('closed')) {
+      isConnected = false;
+      connectModbus();
+    }
   }
 };
 
@@ -66,3 +79,6 @@ export const startPolling = async () => {
     await flushData();
   }, 1000);
 };
+
+// Export for testing
+export const setConnected = (val: boolean) => { isConnected = val; };

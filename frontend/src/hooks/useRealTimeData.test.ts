@@ -1,0 +1,73 @@
+import { renderHook, act } from '@testing-library/react';
+import { useRealTimeData } from './useRealTimeData';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
+// Create a global mock for EventSource
+let mockEventSourceInstance: MockEventSource;
+
+class MockEventSource {
+  onmessage: ((ev: MessageEvent) => any) | null = null;
+  onerror: ((ev: Event) => any) | null = null;
+  close = vi.fn();
+  constructor(public url: string) {
+    mockEventSourceInstance = this;
+  }
+}
+
+describe('useRealTimeData', () => {
+  const initialDevices = [{ id: 10, name: 'Device 10' }];
+
+  beforeEach(() => {
+    vi.stubGlobal('EventSource', MockEventSource);
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('initializes with default data', () => {
+    const { result } = renderHook(() => useRealTimeData(initialDevices));
+    expect(result.current[10]).toEqual({
+      id: 10,
+      voltage: 0,
+      current: 0,
+      kva: 0,
+      status: 'offline',
+      lastUpdate: 0,
+    });
+  });
+
+  it('updates state when receiving a message', () => {
+    const { result } = renderHook(() => useRealTimeData(initialDevices));
+    
+    act(() => {
+      mockEventSourceInstance.onmessage!({
+        data: JSON.stringify({ id: 10, voltage: 230, current: 5, kva: 1.15 }),
+      } as MessageEvent);
+    });
+
+    expect(result.current[10].voltage).toBe(230);
+    expect(result.current[10].status).toBe('online');
+  });
+
+  it('marks device as offline after timeout', () => {
+    const { result } = renderHook(() => useRealTimeData(initialDevices));
+    
+    act(() => {
+      mockEventSourceInstance.onmessage!({
+        data: JSON.stringify({ id: 10, voltage: 230, current: 5, kva: 1.15 }),
+      } as MessageEvent);
+    });
+
+    expect(result.current[10].status).toBe('online');
+
+    // Fast-forward 6 seconds
+    act(() => {
+      vi.advanceTimersByTime(6000);
+    });
+
+    expect(result.current[10].status).toBe('offline');
+  });
+});

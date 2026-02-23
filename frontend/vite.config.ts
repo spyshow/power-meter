@@ -9,5 +9,15 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
+    deps: {
+      optimizer: {
+        web: {
+          include: ['@refinedev/core', '@refinedev/antd', '@refinedev/react-router-v6', '@refinedev/simple-rest'],
+        },
+      },
+    },
+    ssr: {
+      noExternal: [/@refinedev\/.*/, /antd/],
+    },
   },
 })

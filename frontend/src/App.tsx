@@ -1,9 +1,10 @@
 import { Refine } from '@refinedev/core';
 import { notificationProvider, ThemedLayoutV2, ErrorComponent, RefineThemes } from '@refinedev/antd';
 import { ConfigProvider } from 'antd';
-import routerBindings, { NavigateToResource, UnsavedChangesNotifier } from '@refinedev/react-router-v6';
+import routerBindings, { UnsavedChangesNotifier } from '@refinedev/react-router-v6';
 import dataProvider from '@refinedev/simple-rest';
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
+import { Dashboard } from './pages/Dashboard';
 import '@refinedev/antd/dist/reset.css';
 
 const App = () => {
@@ -33,7 +34,7 @@ const App = () => {
                 </ThemedLayoutV2>
               }
             >
-              <Route index element={<div style={{ padding: 24 }}>Dashboard Content (Coming Soon)</div>} />
+              <Route index element={<Dashboard />} />
               <Route path="*" element={<ErrorComponent />} />
             </Route>
           </Routes>

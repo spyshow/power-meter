@@ -37,7 +37,7 @@
     - [ ] Write Tests: Component renders correctly with mock data
     - [ ] Implement: Card component showing Voltage, Amps, KVA
     - [ ] Implement: Grid layout for 6 devices
-- [ ] Task: Real-time Integration
+- [~] Task: Real-time Integration
     - [ ] Write Tests: Hook updates state on incoming data
     - [ ] Implement: Connect Frontend to Backend Real-time stream
 - [ ] Task: Historical Charts

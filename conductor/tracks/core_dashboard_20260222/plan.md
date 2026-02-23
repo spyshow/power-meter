@@ -40,7 +40,7 @@
 - [x] Task: Real-time Integration [decf209]
     - [ ] Write Tests: Hook updates state on incoming data
     - [ ] Implement: Connect Frontend to Backend Real-time stream
-- [ ] Task: Historical Charts
+- [~] Task: Historical Charts
     - [ ] Write Tests: Chart component renders with mock history data
     - [ ] Implement: Modal/Page for device details with Ant Design Charts
 - [ ] Task: Conductor - User Manual Verification 'Frontend Dashboard' (Protocol in workflow.md)

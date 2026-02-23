@@ -11,16 +11,18 @@ interface DeviceCardProps {
   current: number;
   kva: number;
   status: 'online' | 'offline';
+  onClick?: () => void;
 }
 
-export const DeviceCard: React.FC<DeviceCardProps> = ({ id, name, voltage, current, kva, status }) => {
+export const DeviceCard: React.FC<DeviceCardProps> = ({ id, name, voltage, current, kva, status, onClick }) => {
   return (
     <Card
       title={<Title level={4}>{name}</Title>}
       extra={<Badge status={status === 'online' ? 'success' : 'error'} text={status.toUpperCase()} />}
-      style={{ width: '100%' }}
+      style={{ width: '100%', cursor: onClick ? 'pointer' : 'default' }}
+      onClick={onClick}
       actions={[
-        <DashboardOutlined key="details" />,
+        <DashboardOutlined key="details" onClick={onClick} />,
       ]}
     >
       <Row gutter={16}>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Row, Col, Spin, Typography } from 'antd';
 import axios from 'axios';
 import { DeviceCard } from '../components/DeviceCard';
+import { DeviceDetailsModal } from '../components/DeviceDetailsModal';
 import { useRealTimeData } from '../hooks/useRealTimeData';
 
 const { Title } = Typography;
@@ -9,6 +10,7 @@ const { Title } = Typography;
 export const Dashboard = () => {
   const [devices, setDevices] = useState<{ id: number; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedDevice, setSelectedDevice] = useState<{ id: number; name: string } | null>(null);
   const realTimeData = useRealTimeData(devices);
 
   useEffect(() => {
@@ -44,11 +46,18 @@ export const Dashboard = () => {
                 current={deviceData?.current || 0}
                 kva={deviceData?.kva || 0}
                 status={deviceData?.status || 'offline'}
+                onClick={() => setSelectedDevice(device)}
               />
             </Col>
           );
         })}
       </Row>
+
+      <DeviceDetailsModal
+        device={selectedDevice}
+        open={!!selectedDevice}
+        onClose={() => setSelectedDevice(null)}
+      />
     </div>
   );
 };

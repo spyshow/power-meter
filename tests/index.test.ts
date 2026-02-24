@@ -3,6 +3,9 @@ import { app } from '../src/index';
 
 jest.mock('../src/influx', () => ({
   queryHistory: jest.fn().mockResolvedValue([]),
+  queryAllPeaks: jest.fn().mockResolvedValue([
+    { _time: '2026-02-24T10:00:00Z', device_id: '10', metric: 'voltage', value: 240 }
+  ]),
 }));
 
 describe('API Routes', () => {
@@ -24,5 +27,12 @@ describe('API Routes', () => {
     const response = await request(app).get('/history?deviceId=10&range=1h');
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
+  });
+
+  it('should return historical peak events on /peaks', async () => {
+    const response = await request(app).get('/peaks');
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.body)).toBe(true);
+    expect(response.body[0]).toHaveProperty('metric', 'voltage');
   });
 });

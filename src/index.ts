@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { DEVICES } from './devices';
 import { eventBus } from './events';
-import { queryHistory } from './influx';
+import { queryHistory, queryAllPeaks } from './influx';
 import { connectModbus, startPolling } from './modbus';
 import { peaks } from './peaks';
 
@@ -57,6 +57,15 @@ app.get('/history', async (req, res) => {
     res.json(data);
   } catch (error) {
     res.status(500).json({ error: 'Error querying history' });
+  }
+});
+
+app.get('/peaks', async (req, res) => {
+  try {
+    const data = await queryAllPeaks();
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Error querying peaks' });
   }
 });
 

@@ -2,6 +2,7 @@ import ModbusRTU from 'modbus-serial';
 import dotenv from 'dotenv';
 import { writeData, flushData } from './influx';
 import { emitDeviceUpdate } from './events';
+import { peaks } from './peaks';
 
 dotenv.config();
 
@@ -88,6 +89,11 @@ export const pollDevice = async (id: number) => {
       console.log(`Device ${id} is now ONLINE`);
       deviceStatus[id].status = 'online';
     }
+
+    // Check for peaks
+    peaks.checkPeak(id, 'voltage', voltage);
+    peaks.checkPeak(id, 'current', current);
+    peaks.checkPeak(id, 'kva', kva);
 
     emitDeviceUpdate(id, { voltage, current, kva, status: 'online' });
     writeData('power_consumption', { device_id: id.toString() }, { voltage, current, kva });

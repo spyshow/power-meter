@@ -7,7 +7,7 @@
 - [x] Task: Modbus Integration [b8ed108]
     - [ ] Write Tests: Verify `pollDevice` correctly calls `PeakService` on new data
     - [ ] Implement: Integrate `PeakService.checkPeaks()` into the 1Hz polling loop in `modbus.ts`
-- [ ] Task: Startup Initialization
+- [x] Task: Startup Initialization [55cd821]
     - [ ] Write Tests: Verify backend loads last known peaks from InfluxDB on startup
     - [ ] Implement: Query InfluxDB during server boot to hydrate `PeakService` memory state
 - [ ] Task: Conductor - User Manual Verification 'Backend Peak Detection Logic' (Protocol in workflow.md)

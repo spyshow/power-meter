@@ -4,7 +4,7 @@
 - [x] Task: Peak Storage & Detection Service [f2c0f77]
     - [ ] Write Tests: Verify peak detection logic (only update when value is strictly greater)
     - [ ] Implement: `PeakService` to track and persist peaks to InfluxDB
-- [ ] Task: Modbus Integration
+- [x] Task: Modbus Integration [b8ed108]
     - [ ] Write Tests: Verify `pollDevice` correctly calls `PeakService` on new data
     - [ ] Implement: Integrate `PeakService.checkPeaks()` into the 1Hz polling loop in `modbus.ts`
 - [ ] Task: Startup Initialization

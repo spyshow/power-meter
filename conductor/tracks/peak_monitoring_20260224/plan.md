@@ -25,7 +25,7 @@
 - [x] Task: Page Routing & Navigation [8663461]
     - [ ] Write Tests: New route `/peaks` is accessible and sidebar link exists
     - [ ] Implement: Register "Peak Analysis" resource in `App.tsx` and add to sidebar
-- [ ] Task: Peaks Table Implementation
+- [x] Task: Peaks Table Implementation [7239e7b]
     - [ ] Write Tests: Table renders rows correctly with Device, Parameter, Value, and Time
     - [ ] Implement: `PeakAnalysis` page with Ant Design table and historical data fetching
 - [ ] Task: Real-time Table Updates

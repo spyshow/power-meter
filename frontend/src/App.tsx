@@ -11,8 +11,9 @@ import { ConfigProvider, theme, Switch, Space, Typography } from 'antd';
 import routerBindings, { UnsavedChangesNotifier } from '@refinedev/react-router-v6';
 import dataProvider from '@refinedev/simple-rest';
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
-import { DashboardOutlined, GlobalOutlined, BulbOutlined, BulbFilled } from '@ant-design/icons';
+import { DashboardOutlined, GlobalOutlined, BulbOutlined, BulbFilled, RiseOutlined } from '@ant-design/icons';
 import { Dashboard } from './pages/Dashboard';
+import { PeakAnalysis } from './pages/PeakAnalysis';
 import '@refinedev/antd/dist/reset.css';
 
 const { Text } = Typography;
@@ -59,6 +60,14 @@ const App = () => {
               meta: {
                 label: 'System Dashboard',
                 icon: <DashboardOutlined />,
+              }
+            },
+            {
+              name: 'peaks',
+              list: '/peaks',
+              meta: {
+                label: 'Peak Analysis',
+                icon: <RiseOutlined />,
               }
             },
           ]}
@@ -111,6 +120,7 @@ const App = () => {
               }
             >
               <Route index element={<Dashboard />} />
+              <Route path="/peaks" element={<PeakAnalysis />} />
               <Route path="*" element={<ErrorComponent />} />
             </Route>
           </Routes>

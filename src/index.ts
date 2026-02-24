@@ -39,10 +39,16 @@ app.get('/events', (req, res) => {
     res.write(`data: ${JSON.stringify(data)}\n\n`);
   };
 
+  const onPeak = (data: any) => {
+    res.write(`data: ${JSON.stringify({ type: 'peak', ...data })}\n\n`);
+  };
+
   eventBus.on('update', onUpdate);
+  eventBus.on('peak', onPeak);
 
   req.on('close', () => {
     eventBus.off('update', onUpdate);
+    eventBus.off('peak', onPeak);
   });
 });
 

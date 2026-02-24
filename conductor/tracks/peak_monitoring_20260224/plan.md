@@ -21,7 +21,7 @@
     - [ ] Implement: Add `peak_detected` event type to `eventBus` and `/events` SSE stream
 - [x] Task: Conductor - User Manual Verification 'API & Real-time Delivery' (Protocol in workflow.md) [59926f8]
 
-## Phase 3: Frontend Peak Analysis Page
+## Phase 3: Frontend Peak Analysis Page [checkpoint: 5df8793]
 - [x] Task: Page Routing & Navigation [8663461]
     - [ ] Write Tests: New route `/peaks` is accessible and sidebar link exists
     - [ ] Implement: Register "Peak Analysis" resource in `App.tsx` and add to sidebar
@@ -31,4 +31,4 @@
 - [x] Task: Real-time Table Updates [1c652df]
     - [ ] Write Tests: Hook updates table state when `peak_detected` SSE message arrives
     - [ ] Implement: Update `useRealTimeData` or create `usePeaksData` to listen for new peaks
-- [ ] Task: Conductor - User Manual Verification 'Frontend Peak Analysis Page' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Frontend Peak Analysis Page' (Protocol in workflow.md) [5df8793]

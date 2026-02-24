@@ -13,7 +13,7 @@
 - [x] Task: Conductor - User Manual Verification 'Backend Peak Detection Logic' (Protocol in workflow.md) [be719c6]
 
 ## Phase 2: API & Real-time Delivery
-- [ ] Task: Peak History Endpoint
+- [x] Task: Peak History Endpoint [32a1f78]
     - [ ] Write Tests: GET /peaks returns list of peak events from InfluxDB
     - [ ] Implement: `GET /peaks` controller logic
 - [ ] Task: Real-time Peak Streaming

@@ -16,7 +16,7 @@
 - [x] Task: Peak History Endpoint [32a1f78]
     - [ ] Write Tests: GET /peaks returns list of peak events from InfluxDB
     - [ ] Implement: `GET /peaks` controller logic
-- [ ] Task: Real-time Peak Streaming
+- [x] Task: Real-time Peak Streaming [f8cec0d]
     - [ ] Write Tests: SSE stream emits a specific event when a new peak is detected
     - [ ] Implement: Add `peak_detected` event type to `eventBus` and `/events` SSE stream
 - [ ] Task: Conductor - User Manual Verification 'API & Real-time Delivery' (Protocol in workflow.md)

@@ -28,7 +28,7 @@ describe('DeviceDetailsModal', () => {
 
   it('renders title and loading state', async () => {
     render(<DeviceDetailsModal device={device} open={true} onClose={() => {}} />);
-    expect(screen.getByText(/Device 10 Details/i)).toBeInTheDocument();
+    expect(screen.getByText(/Device 10 Telemetry Trends/i)).toBeInTheDocument();
   });
 
   it('fetches and displays historical charts', async () => {

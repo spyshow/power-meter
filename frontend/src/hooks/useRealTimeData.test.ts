@@ -63,9 +63,9 @@ describe('useRealTimeData', () => {
 
     expect(result.current[10].status).toBe('online');
 
-    // Fast-forward 6 seconds
+    // Fast-forward 13 seconds (timeout is 10s, interval is 2s)
     act(() => {
-      vi.advanceTimersByTime(6000);
+      vi.advanceTimersByTime(13000);
     });
 
     expect(result.current[10].status).toBe('offline');

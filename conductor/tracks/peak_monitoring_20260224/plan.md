@@ -1,6 +1,6 @@
 # Implementation Plan - Device Peak Value Monitoring
 
-## Phase 1: Backend Peak Detection Logic
+## Phase 1: Backend Peak Detection Logic [checkpoint: be719c6]
 - [x] Task: Peak Storage & Detection Service [f2c0f77]
     - [ ] Write Tests: Verify peak detection logic (only update when value is strictly greater)
     - [ ] Implement: `PeakService` to track and persist peaks to InfluxDB
@@ -10,7 +10,7 @@
 - [x] Task: Startup Initialization [55cd821]
     - [ ] Write Tests: Verify backend loads last known peaks from InfluxDB on startup
     - [ ] Implement: Query InfluxDB during server boot to hydrate `PeakService` memory state
-- [ ] Task: Conductor - User Manual Verification 'Backend Peak Detection Logic' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Backend Peak Detection Logic' (Protocol in workflow.md) [be719c6]
 
 ## Phase 2: API & Real-time Delivery
 - [ ] Task: Peak History Endpoint

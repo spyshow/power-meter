@@ -12,7 +12,7 @@ if (!token) {
   console.warn('Warning: INFLUXDB_TOKEN is not defined in .env');
 }
 
-export const influxDB = new InfluxDB({ url, token });
+export const influxDB = new InfluxDB({ url, token: token || '' });
 
 // Internal buffer for failed writes
 let memoryBuffer: Point[] = [];

@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 
 export const eventBus = new EventEmitter();
 
-export const emitDeviceUpdate = (id: number, data: { voltage: number; current: number; kva: number; status?: 'online' | 'offline' }) => {
+export const emitDeviceUpdate = (id: number, data: { voltage?: number; current?: number; kva?: number; status?: 'online' | 'offline' }) => {
   eventBus.emit('update', { id, ...data });
 };
 

@@ -1,7 +1,7 @@
 # Implementation Plan - Device Peak Value Monitoring
 
 ## Phase 1: Backend Peak Detection Logic
-- [ ] Task: Peak Storage & Detection Service
+- [x] Task: Peak Storage & Detection Service [f2c0f77]
     - [ ] Write Tests: Verify peak detection logic (only update when value is strictly greater)
     - [ ] Implement: `PeakService` to track and persist peaks to InfluxDB
 - [ ] Task: Modbus Integration

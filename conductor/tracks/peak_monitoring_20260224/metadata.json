@@ -1,0 +1,8 @@
+{
+  "track_id": "peak_monitoring_20260224",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-02-24T11:45:00Z",
+  "updated_at": "2026-02-24T11:45:00Z",
+  "description": "Add new page that shows a table with the max values with the time, if newer value was more than the recorded before it should add a new raw for it with the date and time, all this should be recorded to the database"
+}

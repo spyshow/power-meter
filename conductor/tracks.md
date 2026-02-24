@@ -6,3 +6,8 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 - [~] **Track: Implement Core Dashboard with Real-time Modbus Integration**
   *Link: [./tracks/core_dashboard_20260222/](./tracks/core_dashboard_20260222/)*
+
+---
+
+- [ ] **Track: Device Peak Value Monitoring**
+  *Link: [./tracks/peak_monitoring_20260224/](./tracks/peak_monitoring_20260224/)*

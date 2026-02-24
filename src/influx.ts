@@ -97,3 +97,27 @@ export const queryHistory = (deviceId: string, range: string = '1h'): Promise<an
     });
   });
 };
+
+export const queryAllPeaks = (): Promise<any[]> => {
+  const queryApi = influxDB.getQueryApi(org);
+  const query = `from(bucket: "${bucket}")
+    |> range(start: -30d)
+    |> filter(fn: (r) => r["_measurement"] == "peak_events")
+    |> last()
+    |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")`;
+
+  return new Promise((resolve, reject) => {
+    const results: any[] = [];
+    queryApi.queryRows(query, {
+      next(row, tableMeta) {
+        results.push(tableMeta.toObject(row));
+      },
+      error(error) {
+        reject(error);
+      },
+      complete() {
+        resolve(results);
+      },
+    });
+  });
+};

@@ -1,8 +1,23 @@
-import { writeData } from './influx';
+import { writeData, queryAllPeaks } from './influx';
 import { emitPeakDetected } from './events';
 
 export class PeakService {
   private currentMax: Record<string, number> = {};
+
+  public async initialize(): Promise<void> {
+    try {
+      const data = await queryAllPeaks();
+      for (const row of data) {
+        if (row.device_id && row.metric && row.value !== undefined) {
+          const deviceId = parseInt(row.device_id, 10);
+          this.setMax(deviceId, row.metric, row.value);
+        }
+      }
+      console.log(`[PeakService] Initialized with ${data.length} records from database`);
+    } catch (error) {
+      console.error('[PeakService] Failed to initialize peaks from database:', error);
+    }
+  }
 
   private getKey(deviceId: number, metric: string): string {
     return `${deviceId}_${metric}`;

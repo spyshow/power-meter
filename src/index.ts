@@ -5,6 +5,7 @@ import { DEVICES } from './devices';
 import { eventBus } from './events';
 import { queryHistory } from './influx';
 import { connectModbus, startPolling } from './modbus';
+import { peaks } from './peaks';
 
 dotenv.config();
 
@@ -64,6 +65,7 @@ export { app };
 if (process.env.NODE_ENV !== 'test') {
   app.listen(port, async () => {
     console.log(`Server is running on http://localhost:${port}`);
+    await peaks.initialize();
     await connectModbus();
     startPolling();
   });

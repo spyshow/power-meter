@@ -57,4 +57,20 @@ describe('PeakService', () => {
     expect(peakService.getMax(deviceId, 'voltage')).toBe(230);
     expect(peakService.getMax(deviceId, 'current')).toBe(5);
   });
+
+  it('should hydrate memory state from InfluxDB on initialization', async () => {
+    const mockPeaks = [
+      { device_id: '10', metric: 'voltage', value: 235 },
+      { device_id: '20', metric: 'current', value: 12 },
+    ];
+    
+    // Mock the queryAllPeaks function (which we will implement)
+    const influx = require('../src/influx');
+    influx.queryAllPeaks = jest.fn().mockResolvedValue(mockPeaks);
+
+    await peakService.initialize();
+
+    expect(peakService.getMax(10, 'voltage')).toBe(235);
+    expect(peakService.getMax(20, 'current')).toBe(12);
+  });
 });

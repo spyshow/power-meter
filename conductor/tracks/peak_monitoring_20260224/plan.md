@@ -28,7 +28,7 @@
 - [x] Task: Peaks Table Implementation [7239e7b]
     - [ ] Write Tests: Table renders rows correctly with Device, Parameter, Value, and Time
     - [ ] Implement: `PeakAnalysis` page with Ant Design table and historical data fetching
-- [ ] Task: Real-time Table Updates
+- [x] Task: Real-time Table Updates [1c652df]
     - [ ] Write Tests: Hook updates table state when `peak_detected` SSE message arrives
     - [ ] Implement: Update `useRealTimeData` or create `usePeaksData` to listen for new peaks
 - [ ] Task: Conductor - User Manual Verification 'Frontend Peak Analysis Page' (Protocol in workflow.md)

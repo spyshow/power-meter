@@ -28,32 +28,39 @@ export const useRealTimeData = (initialDevices: { id: number; name: string }[]) 
     if (initialDevices.length === 0) return;
 
     const eventSource = new EventSource('http://localhost:3001/events');
+    console.log("Connecting to SSE stream at /events...");
+
+    eventSource.onopen = () => {
+      console.log("SSE Connection opened successfully.");
+    };
 
     eventSource.onmessage = (event) => {
       const update = JSON.parse(event.data);
+      console.log("Real-time update received for device:", update.id);
       setData((prev) => ({
         ...prev,
         [update.id]: {
+          ...prev[update.id],
           ...update,
-          status: 'online',
-          lastUpdate: Date.now(),
+          status: update.status || 'online',
+          lastUpdate: update.status === 'offline' ? prev[update.id].lastUpdate : Date.now(),
         }
       }));
     };
 
     eventSource.onerror = () => {
-      // If error, mark all as offline?
-      // Actually SSE will auto-reconnect, so let's just keep last data but maybe mark offline after timeout
+      // If SSE disconnects, we keep the last data but the offline detection will eventually kick in
     };
 
-    // Offline detection
+    // Offline detection (client-side safety net)
     const interval = setInterval(() => {
       const now = Date.now();
       setData((prev) => {
         const next = { ...prev };
         let changed = false;
         for (const id in next) {
-          if (next[id].status === 'online' && now - next[id].lastUpdate > 5000) {
+          // If we haven't heard from the device in 10 seconds, mark as offline
+          if (next[id].status === 'online' && now - next[id].lastUpdate > 10000) {
             next[id].status = 'offline';
             changed = true;
           }

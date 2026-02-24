@@ -48,7 +48,8 @@ describe('System Integration', () => {
     });
 
     // In a real E2E we'd wait for the interval, but here we can just call it
-    const { pollDevice } = require('../src/modbus');
+    const { pollDevice, setConnected } = require('../src/modbus');
+    setConnected(true);
     await pollDevice(10);
 
     // 3. Verify event was emitted

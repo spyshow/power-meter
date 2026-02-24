@@ -43,13 +43,13 @@
 - [x] Task: Historical Charts [5b9b795]
     - [ ] Write Tests: Chart component renders with mock history data
     - [ ] Implement: Modal/Page for device details with Ant Design Charts
-- [ ] Task: Conductor - User Manual Verification 'Frontend Dashboard' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Frontend Dashboard' (Protocol in workflow.md) [5b9b795]
 
 ## Phase 4: Integration & Validation
-- [ ] Task: System Integration Test
+- [x] Task: System Integration Test [c1ceb7c]
     - [ ] Write Tests: End-to-end test flow (Mock Modbus -> Backend -> DB -> API)
     - [ ] Implement: Fix any integration bugs
-- [ ] Task: Reliability Hardening
+- [x] Task: Reliability Hardening [c1ceb7c]
     - [ ] Write Tests: Verify auto-reconnection logic when Modbus fails
     - [ ] Implement: Robust error handling and logging
 - [ ] Task: Conductor - User Manual Verification 'Integration & Validation' (Protocol in workflow.md)

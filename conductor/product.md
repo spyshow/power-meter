@@ -20,6 +20,7 @@ A centralized web-based dashboard for monitoring and analyzing power consumption
 - **Device Dashboard:** Real-time display of Voltage, Current, and Power for 6 specific PM5310 devices.
 - **Data Logging:** Continuous recording of sensor data to a local InfluxDB instance at 1-second intervals.
 - **Telemetry Trends:** Interactive, live-updating charts to visualize historical data with dynamic aggregation for performance.
+- **Peak Value Monitoring:** Dedicated analysis page tracking all-time maximum values for every device and metric with real-time updates.
 - **Theme Support:** Fully responsive UI with integrated Dark Mode support.
 
 ## Technical Context

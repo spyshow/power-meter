@@ -22,7 +22,7 @@
 - [x] Task: Conductor - User Manual Verification 'API & Real-time Delivery' (Protocol in workflow.md) [59926f8]
 
 ## Phase 3: Frontend Peak Analysis Page
-- [ ] Task: Page Routing & Navigation
+- [x] Task: Page Routing & Navigation [8663461]
     - [ ] Write Tests: New route `/peaks` is accessible and sidebar link exists
     - [ ] Implement: Register "Peak Analysis" resource in `App.tsx` and add to sidebar
 - [ ] Task: Peaks Table Implementation

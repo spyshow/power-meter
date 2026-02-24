@@ -1,35 +1,14 @@
-import { useState, useEffect } from 'react';
 import { Table, Typography, Tag, Space, theme } from 'antd';
-import axios from 'axios';
 import dayjs from 'dayjs';
 import { RiseOutlined, ThunderboltOutlined, DashboardOutlined } from '@ant-design/icons';
+import { usePeaksData, PeakRecord } from '../../hooks/usePeaksData';
 
 const { Title, Text } = Typography;
 const { useToken } = theme;
 
-interface PeakRecord {
-  _time: string;
-  device_id: string;
-  metric: string;
-  value: number;
-}
-
 export const PeakAnalysis = () => {
   const { token } = useToken();
-  const [data, setData] = useState<PeakRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    axios.get('http://localhost:3001/peaks')
-      .then(res => {
-        setData(res.data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("Failed to fetch peaks", err);
-        setLoading(false);
-      });
-  }, []);
+  const { data, loading } = usePeaksData();
 
   const columns = [
     {

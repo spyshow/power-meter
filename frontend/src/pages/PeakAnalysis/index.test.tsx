@@ -5,8 +5,17 @@ import axios from 'axios';
 
 vi.mock('axios');
 
+// Mock EventSource
+class MockEventSource {
+  onmessage: ((ev: MessageEvent) => any) | null = null;
+  onerror: ((ev: Event) => any) | null = null;
+  close = vi.fn();
+  constructor(public url: string) {}
+}
+
 describe('PeakAnalysis Page', () => {
   beforeEach(() => {
+    vi.stubGlobal('EventSource', MockEventSource);
     vi.mocked(axios.get).mockResolvedValue({
       data: [
         { _time: '2026-02-24T10:00:00Z', device_id: '10', metric: 'voltage', value: 245.5 },

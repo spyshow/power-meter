@@ -33,6 +33,16 @@ services:
     networks:
       - mcgi-network
 
+  frontend:
+    build: ./frontend
+    container_name: mcgi-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - mcgi-network
+
 networks:
   mcgi-network:
     driver: bridge

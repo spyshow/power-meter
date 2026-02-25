@@ -11,10 +11,9 @@
     - [x] Implement: Configure backend service in `docker-compose.yml` to depend on InfluxDB
     - [x] Implement: Update backend config to use `influxdb` hostname for internal container network
 - [x] Task: Conductor - User Manual Verification 'Backend and Database Orchestration' (Protocol in workflow.md) [30e2649]
-- [ ] Task: Conductor - User Manual Verification 'Backend and Database Orchestration' (Protocol in workflow.md)
 
 ## Phase 2: Frontend Dockerization (Multi-stage)
-- [ ] Task: Frontend Image Creation (Multi-stage)
+- [~] Task: Frontend Image Creation (Multi-stage)
     - [ ] Write Verification: Script to check if frontend image correctly serves index.html via Nginx
     - [ ] Implement: **Multi-stage Dockerfile** for the React/Refine frontend (Build stage -> Nginx serving stage)
 - [ ] Task: Frontend Orchestration

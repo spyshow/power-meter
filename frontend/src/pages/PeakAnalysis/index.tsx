@@ -1,7 +1,7 @@
-import { Table, Typography, Tag, Space, theme } from 'antd';
+import { Table, Typography, Tag, Space, theme, Input } from 'antd';
 import dayjs from 'dayjs';
 import { RiseOutlined, ThunderboltOutlined, DashboardOutlined } from '@ant-design/icons';
-import { usePeaksData, PeakRecord } from '../../hooks/usePeaksData';
+import { usePeaksData, type PeakRecord } from '../../hooks/usePeaksData';
 
 const { Title, Text } = Typography;
 const { useToken } = theme;
@@ -61,12 +61,12 @@ export const PeakAnalysis = () => {
       filterSearch: true,
       filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: any) => (
         <div style={{ padding: 8 }}>
-          <input
+          <Input
             placeholder="Search value"
             value={selectedKeys[0]}
             onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
             onPressEnter={() => confirm()}
-            style={{ width: 188, marginBottom: 8, display: 'block', padding: '4px 8px', border: '1px solid #d9d9d9', borderRadius: '4px' }}
+            style={{ width: 188, marginBottom: 8, display: 'block' }}
           />
           <Space>
             <button

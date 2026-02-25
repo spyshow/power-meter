@@ -38,7 +38,7 @@ export const DeviceCard: React.FC<DeviceCardProps> = ({ id, name, voltage, curre
       actions={[
         <div key="view-details" onClick={(e) => { e.stopPropagation(); onClick?.(); }} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4px' }}>
           <LineChartOutlined />
-          <Text size="small">View History</Text>
+          <Text>View History</Text>
         </div>
       ]}
     >

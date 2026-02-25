@@ -28,4 +28,4 @@
 - [x] Task: Final Stack Hardening [739e922]
     - [x] Write Verification: Full stack start-up test (`docker-compose up`) ensuring no "connection refused" errors
     - [x] Implement: Add health checks to the compose file for all services
-- [ ] Task: Conductor - User Manual Verification 'Integrated Stack Validation' (Protocol in workflow.md)
+- [~] Task: Conductor - User Manual Verification 'Integrated Stack Validation' (Protocol in workflow.md)

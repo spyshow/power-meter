@@ -27,8 +27,8 @@ export const useRealTimeData = (initialDevices: { id: number; name: string }[]) 
   useEffect(() => {
     if (initialDevices.length === 0) return;
 
-    const eventSource = new EventSource('http://localhost:3001/events');
-    console.log("Connecting to SSE stream at /events...");
+    const eventSource = new EventSource('/api/events');
+    console.log("Connecting to SSE stream at /api/events...");
 
     eventSource.onopen = () => {
       console.log("SSE Connection opened successfully.");

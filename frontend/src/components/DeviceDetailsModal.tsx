@@ -123,7 +123,7 @@ export const DeviceDetailsModal: React.FC<DeviceDetailsModalProps> = ({ device, 
   useEffect(() => {
     if (device && open) {
       setLoading(true);
-      axios.get(`http://localhost:3001/history?deviceId=${device.id}&range=${range}`)
+      axios.get(`/api/history?deviceId=${device.id}&range=${range}`)
         .then(res => {
           setHistory(res.data);
           setLoading(false);

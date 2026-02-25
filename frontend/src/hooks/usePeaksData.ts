@@ -14,7 +14,7 @@ export const usePeaksData = () => {
 
   useEffect(() => {
     // Initial fetch
-    axios.get('http://localhost:3001/peaks')
+    axios.get('/api/peaks')
       .then(res => {
         setData(res.data);
         setLoading(false);
@@ -25,7 +25,7 @@ export const usePeaksData = () => {
       });
 
     // SSE Listener for real-time peaks
-    const eventSource = new EventSource('http://localhost:3001/events');
+    const eventSource = new EventSource('/api/events');
 
     eventSource.onmessage = (event) => {
       try {

@@ -46,7 +46,7 @@ const App = () => {
       }}>
         <Refine
           routerProvider={routerBindings}
-          dataProvider={dataProvider('http://localhost:3001')}
+          dataProvider={dataProvider('/api')}
           notificationProvider={notificationProvider}
           options={{
             syncWithLocation: true,

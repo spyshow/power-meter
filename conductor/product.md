@@ -23,6 +23,7 @@ A centralized web-based dashboard for monitoring and analyzing power consumption
 - **Peak Value Monitoring:** Dedicated analysis page tracking all-time maximum values for every device and metric with real-time updates.
 - **Theme Support:** Fully responsive UI with integrated Dark Mode support.
 - **Containerized Deployment:** Entire stack (Frontend, Backend, InfluxDB) is containerized for consistent deployment across environments.
+- **Automated CI/CD Pipeline:** Automated testing, building, and deployment via GitHub Actions, Docker Hub, and Watchtower.
 
 ## Technical Context
 - **Protocol:** Modbus TCP (via PAS600 Gateway at 172.16.0.80).

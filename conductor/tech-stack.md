@@ -22,4 +22,7 @@
 ## Infrastructure
 - **Containerization:** Docker (Recommended for InfluxDB + App deployment)
 - **Orchestration:** Docker Compose (Managing Frontend, Backend, and InfluxDB)
+- **CI/CD:** GitHub Actions (Automated testing and image building)
+- **Image Registry:** Docker Hub (spyshow/power-meter)
+- **Auto-Deployment:** Watchtower (nicholasfedor/watchtower)
 - **Service Serving:** Nginx (Serving the frontend and proxying API requests)

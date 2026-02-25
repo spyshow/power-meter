@@ -18,11 +18,11 @@
     - [x] Implement: Add Docker layer caching to speed up builds
 - [x] Task: Conductor - User Manual Verification 'Docker Hub & Image Building' (Protocol in workflow.md) [9b5990a]
 
-## Phase 3: Continuous Deployment with Watchtower
-- [ ] Task: Watchtower Integration
-    - [ ] Implement: Add Watchtower service to `docker-compose.yml`
-    - [ ] Implement: Configure Watchtower to use the `nicholas-fedor/watchtower` image
-    - [ ] Implement: Set environment variables for polling intervals and repo monitoring
-- [ ] Task: Final Pipeline Hardening
-    - [ ] Write Verification: Full end-to-end test (Push code -> CI pass -> Image push -> Watchtower update)
-- [ ] Task: Conductor - User Manual Verification 'Continuous Deployment with Watchtower' (Protocol in workflow.md)
+## Phase 3: Continuous Deployment with Watchtower [checkpoint: f4cea50]
+- [x] Task: Watchtower Integration [1694f1d]
+    - [x] Implement: Add Watchtower service to `docker-compose.yml`
+    - [x] Implement: Configure Watchtower to use the `nicholas-fedor/watchtower` image
+    - [x] Implement: Set environment variables for polling intervals and repo monitoring
+- [x] Task: Final Pipeline Hardening [f4cea50]
+    - [x] Write Verification: Full end-to-end test (Push code -> CI pass -> Image push -> Watchtower update)
+- [x] Task: Conductor - User Manual Verification 'Continuous Deployment with Watchtower' (Protocol in workflow.md) [f4cea50]

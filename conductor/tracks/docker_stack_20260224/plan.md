@@ -25,7 +25,7 @@
 - [x] Task: Environment & Networking [3a5e543]
     - [x] Implement: Centralized `.env` management for the entire stack
     - [x] Implement: Bridge network for service discovery across containers
-- [ ] Task: Final Stack Hardening
-    - [ ] Write Verification: Full stack start-up test (`docker-compose up`) ensuring no "connection refused" errors
-    - [ ] Implement: Add health checks to the compose file for all services
+- [x] Task: Final Stack Hardening [739e922]
+    - [x] Write Verification: Full stack start-up test (`docker-compose up`) ensuring no "connection refused" errors
+    - [x] Implement: Add health checks to the compose file for all services
 - [ ] Task: Conductor - User Manual Verification 'Integrated Stack Validation' (Protocol in workflow.md)

@@ -15,6 +15,11 @@ services:
       - influxdb-data:/var/lib/influxdb2
     networks:
       - mcgi-network
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build: .
@@ -29,9 +34,15 @@ services:
       - PAS600_IP=${PAS600_IP:-172.16.0.80}
       - PAS600_PORT=${PAS600_PORT:-502}
     depends_on:
-      - influxdb
+      influxdb:
+        condition: service_healthy
     networks:
       - mcgi-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   frontend:
     build: ./frontend
@@ -39,9 +50,15 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - mcgi-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:80/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 networks:
   mcgi-network:

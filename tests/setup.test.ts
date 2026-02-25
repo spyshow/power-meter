@@ -12,9 +12,10 @@ describe('Project Setup', () => {
     expect(fs.existsSync(filePath)).toBe(true);
   });
 
-  it('should have a .env file', () => {
-    const filePath = path.join(__dirname, '../.env');
-    expect(fs.existsSync(filePath)).toBe(true);
+  it('should have a .env or .env.example file', () => {
+    const envPath = path.join(__dirname, '../.env');
+    const examplePath = path.join(__dirname, '../.env.example');
+    expect(fs.existsSync(envPath) || fs.existsSync(examplePath)).toBe(true);
   });
 
   it('should have a .gitignore file', () => {

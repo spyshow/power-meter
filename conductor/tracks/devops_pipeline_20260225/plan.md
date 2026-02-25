@@ -18,7 +18,7 @@
     - [x] Implement: Add Docker layer caching to speed up builds
 - [x] Task: Conductor - User Manual Verification 'Docker Hub & Image Building' (Protocol in workflow.md) [9b5990a]
 
-## Phase 3: Continuous Deployment with Watchtower [checkpoint: f4cea50]
+## Phase 3: Continuous Deployment with Watchtower [checkpoint: 5edd33a]
 - [x] Task: Watchtower Integration [1694f1d]
     - [x] Implement: Add Watchtower service to `docker-compose.yml`
     - [x] Implement: Configure Watchtower to use the `nicholas-fedor/watchtower` image

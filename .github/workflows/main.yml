@@ -18,6 +18,8 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
+      - name: Create .env file
+        run: cp .env.example .env
       - name: Run tests
         run: npm test
 
@@ -45,6 +47,16 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v4
+      - name: Check for Docker Hub Secrets
+        run: |
+          if [ -z "${{ secrets.DOCKER_HUB_USERNAME }}" ]; then
+            echo "Error: DOCKER_HUB_USERNAME is not set in GitHub Secrets."
+            exit 1
+          fi
+          if [ -z "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" ]; then
+            echo "Error: DOCKER_HUB_ACCESS_TOKEN is not set in GitHub Secrets."
+            exit 1
+          fi
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Login to Docker Hub
@@ -67,6 +79,16 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v4
+      - name: Check for Docker Hub Secrets
+        run: |
+          if [ -z "${{ secrets.DOCKER_HUB_USERNAME }}" ]; then
+            echo "Error: DOCKER_HUB_USERNAME is not set in GitHub Secrets."
+            exit 1
+          fi
+          if [ -z "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" ]; then
+            echo "Error: DOCKER_HUB_ACCESS_TOKEN is not set in GitHub Secrets."
+            exit 1
+          fi
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Login to Docker Hub

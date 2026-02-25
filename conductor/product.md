@@ -22,6 +22,7 @@ A centralized web-based dashboard for monitoring and analyzing power consumption
 - **Telemetry Trends:** Interactive, live-updating charts to visualize historical data with dynamic aggregation for performance.
 - **Peak Value Monitoring:** Dedicated analysis page tracking all-time maximum values for every device and metric with real-time updates.
 - **Theme Support:** Fully responsive UI with integrated Dark Mode support.
+- **Containerized Deployment:** Entire stack (Frontend, Backend, InfluxDB) is containerized for consistent deployment across environments.
 
 ## Technical Context
 - **Protocol:** Modbus TCP (via PAS600 Gateway at 172.16.0.80).

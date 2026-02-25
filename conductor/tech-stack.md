@@ -21,3 +21,5 @@
 
 ## Infrastructure
 - **Containerization:** Docker (Recommended for InfluxDB + App deployment)
+- **Orchestration:** Docker Compose (Managing Frontend, Backend, and InfluxDB)
+- **Service Serving:** Nginx (Serving the frontend and proxying API requests)

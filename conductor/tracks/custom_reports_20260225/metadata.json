@@ -1,0 +1,8 @@
+{
+  "track_id": "custom_reports_20260225",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-02-25T13:25:00Z",
+  "updated_at": "2026-02-25T13:25:00Z",
+  "description": "Add a report page for device/metric selection with PDF/Excel export and persistent archive."
+}

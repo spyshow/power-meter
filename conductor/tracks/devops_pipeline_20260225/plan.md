@@ -10,13 +10,13 @@
 - [x] Task: Conductor - User Manual Verification 'Local Automation & CI Setup' (Protocol in workflow.md) [061167b]
 
 ## Phase 2: Docker Hub & Image Building
-- [ ] Task: Docker Build & Push Configuration
-    - [ ] Implement: Add Docker Login step using GitHub Secrets
-    - [ ] Implement: Add Build and Push steps for Backend image to `spyshow/power-meter:backend`
-    - [ ] Implement: Add Build and Push steps for Frontend image to `spyshow/power-meter:frontend`
-- [ ] Task: CI Optimization
-    - [ ] Implement: Add Docker layer caching to speed up builds
-- [ ] Task: Conductor - User Manual Verification 'Docker Hub & Image Building' (Protocol in workflow.md)
+- [x] Task: Docker Build & Push Configuration [061167b]
+    - [x] Implement: Add Docker Login step using GitHub Secrets
+    - [x] Implement: Add Build and Push steps for Backend image to `spyshow/power-meter:backend`
+    - [x] Implement: Add Build and Push steps for Frontend image to `spyshow/power-meter:frontend`
+- [x] Task: CI Optimization [061167b]
+    - [x] Implement: Add Docker layer caching to speed up builds
+- [~] Task: Conductor - User Manual Verification 'Docker Hub & Image Building' (Protocol in workflow.md)
 
 ## Phase 3: Continuous Deployment with Watchtower
 - [ ] Task: Watchtower Integration

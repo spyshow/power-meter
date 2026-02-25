@@ -7,11 +7,11 @@ services:
       - '8086:8086'
     environment:
       - DOCKER_INFLUXDB_INIT_MODE=setup
-      - DOCKER_INFLUXDB_INIT_USERNAME=${DOCKER_INFLUXDB_INIT_USERNAME:-admin}
-      - DOCKER_INFLUXDB_INIT_PASSWORD=${DOCKER_INFLUXDB_INIT_PASSWORD:-password123}
-      - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_ORG:-my-org}
-      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_BUCKET:-modbus_data}
-      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_TOKEN:-my-super-secret-auth-token}
+      - DOCKER_INFLUXDB_INIT_USERNAME=${DOCKER_INFLUXDB_INIT_USERNAME}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${DOCKER_INFLUXDB_INIT_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_BUCKET}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_TOKEN}
     volumes:
       - influxdb-data:/var/lib/influxdb2
     networks:
@@ -30,11 +30,11 @@ services:
       - '3001:3001'
     environment:
       - INFLUXDB_URL=http://influxdb:8086
-      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN:-my-super-secret-auth-token}
-      - INFLUXDB_ORG=${INFLUXDB_ORG:-my-org}
-      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET:-modbus_data}
-      - PAS600_IP=${PAS600_IP:-172.16.0.80}
-      - PAS600_PORT=${PAS600_PORT:-502}
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+      - INFLUXDB_ORG=${INFLUXDB_ORG}
+      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
+      - PAS600_IP=${PAS600_IP}
+      - PAS600_PORT=${PAS600_PORT}
     depends_on:
       influxdb:
         condition: service_healthy

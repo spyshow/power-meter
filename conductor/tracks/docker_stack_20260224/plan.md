@@ -22,9 +22,9 @@
 - [x] Task: Conductor - User Manual Verification 'Frontend Dockerization' (Protocol in workflow.md) [a455bbe]
 
 ## Phase 3: Integrated Stack Validation
-- [ ] Task: Environment & Networking
-    - [ ] Implement: Centralized `.env` management for the entire stack
-    - [ ] Implement: Bridge network for service discovery across containers
+- [x] Task: Environment & Networking [3a5e543]
+    - [x] Implement: Centralized `.env` management for the entire stack
+    - [x] Implement: Bridge network for service discovery across containers
 - [ ] Task: Final Stack Hardening
     - [ ] Write Verification: Full stack start-up test (`docker-compose up`) ensuring no "connection refused" errors
     - [ ] Implement: Add health checks to the compose file for all services

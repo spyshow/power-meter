@@ -3,13 +3,13 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package files for dependency caching
+COPY package.json package-lock.json ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies using 'npm ci' for speed and reproducibility
+RUN npm ci --quiet
 
-# Copy source code
+# Copy source code and config
 COPY . .
 
 # Build the application

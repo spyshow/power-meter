@@ -2,8 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { DEVICES } from './devices';
-import { eventBus } from './events';
-import { queryHistory, queryAllPeaks, queryReportData } from './influx';
+import { eventBus, emitDeviceUpdate } from './events';
+import { queryHistory, queryAllPeaks, queryReportData, writeData, flushData } from './influx';
 import { generateExcel, generatePDF } from './reports';
 import { connectModbus, startPolling, deviceStatus } from './modbus';
 import { peaks } from './peaks';
@@ -149,6 +149,42 @@ app.get('/reports/download/:fileName', (req, res) => {
   } else {
     res.status(404).json({ error: 'File not found' });
   }
+});
+
+// Debug endpoint for testing peaks and real-time updates
+app.post('/debug/inject', async (req, res) => {
+  const { id, voltage, current, kva } = req.body;
+  if (!id) return res.status(400).json({ error: 'Device id is required' });
+
+  const deviceId = parseInt(id, 10);
+
+  // Trigger peak checks
+  if (voltage !== undefined) peaks.checkPeak(deviceId, 'voltage', voltage);
+  if (current !== undefined) peaks.checkPeak(deviceId, 'current', current);
+  if (kva !== undefined) peaks.checkPeak(deviceId, 'kva', kva);
+
+  // Emit SSE update
+  emitDeviceUpdate(deviceId, { 
+    voltage: voltage || 0, 
+    current: current || 0, 
+    kva: kva || 0, 
+    status: 'online' 
+  });
+
+  // Persist to InfluxDB
+  writeData(
+    'power_consumption', 
+    { device_id: deviceId.toString() }, 
+    { 
+      voltage: voltage || 0, 
+      current: current || 0, 
+      kva: kva || 0 
+    }
+  );
+
+  await flushData();
+
+  res.json({ success: true, message: `Data injected for device ${deviceId}` });
 });
 
 export { app };

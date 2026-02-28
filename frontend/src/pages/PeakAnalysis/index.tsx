@@ -1,7 +1,8 @@
-import { Table, Typography, Tag, Space, theme, Input } from 'antd';
+import { Table, Typography, Tag, Space, theme, Input, Segmented } from 'antd';
 import dayjs from 'dayjs';
-import { RiseOutlined, ThunderboltOutlined, DashboardOutlined } from '@ant-design/icons';
+import { RiseOutlined, ThunderboltOutlined, DashboardOutlined, HistoryOutlined, TrophyOutlined } from '@ant-design/icons';
 import { usePeaksData, type PeakRecord } from '../../hooks/usePeaksData';
+import { useState, useMemo } from 'react';
 
 const { Title, Text } = Typography;
 const { useToken } = theme;
@@ -9,6 +10,29 @@ const { useToken } = theme;
 export const PeakAnalysis = () => {
   const { token } = useToken();
   const { data, loading } = usePeaksData();
+  const [viewMode, setViewMode] = useState<'history' | 'highest'>('highest');
+
+  const filteredData = useMemo(() => {
+    if (viewMode === 'history') return data;
+
+    // Filter for highest only: for each device+metric, keep only the latest record
+    const latestPeaks: Record<string, PeakRecord> = {};
+    
+    // Data is already sorted newest-first from the backend
+    data.forEach(record => {
+      const key = `${record.device_id}_${record.metric}`;
+      if (!latestPeaks[key]) {
+        latestPeaks[key] = record;
+      } else {
+        // Just in case, ensure we have the absolute highest value
+        if (record.value > latestPeaks[key].value) {
+          latestPeaks[key] = record;
+        }
+      }
+    });
+
+    return Object.values(latestPeaks);
+  }, [data, viewMode]);
 
   const columns: any = [
     {
@@ -23,6 +47,7 @@ export const PeakAnalysis = () => {
         { text: 'Device 5000', value: '50' },
         { text: 'Device 6000', value: '60' },
       ],
+      filterMultiple: true,
       onFilter: (value: string, record: PeakRecord) => record.device_id === value,
       sorter: (a: PeakRecord, b: PeakRecord) => a.device_id.localeCompare(b.device_id),
       render: (id: string) => <Tag color="blue">Device {id}00</Tag>,
@@ -36,6 +61,7 @@ export const PeakAnalysis = () => {
         { text: 'Current', value: 'current' },
         { text: 'Power', value: 'kva' },
       ],
+      filterMultiple: true,
       onFilter: (value: string, record: PeakRecord) => record.metric === value,
       sorter: (a: PeakRecord, b: PeakRecord) => a.metric.localeCompare(b.metric),
       render: (metric: string) => {
@@ -51,6 +77,16 @@ export const PeakAnalysis = () => {
             <Text strong>{item.label}</Text>
           </Space>
         );
+      }
+    },
+    {
+      title: 'Previous Value',
+      dataIndex: 'previous_value',
+      key: 'prev',
+      render: (val: number, record: PeakRecord) => {
+        if (val === undefined || val === null) return <Text type="secondary">-</Text>;
+        const unit = record.metric === 'voltage' ? 'V' : record.metric === 'current' ? 'A' : 'kVA';
+        return <Text type="secondary">{Number(val).toFixed(2)} {unit}</Text>;
       }
     },
     {
@@ -88,8 +124,23 @@ export const PeakAnalysis = () => {
       ),
       onFilter: (value: string, record: PeakRecord) => record.value.toString().includes(value),
       render: (val: number, record: PeakRecord) => {
+        if (val === undefined || val === null) return <Text type="secondary">-</Text>;
         const unit = record.metric === 'voltage' ? 'V' : record.metric === 'current' ? 'A' : 'kVA';
-        return <Text strong style={{ fontSize: '16px' }}>{val.toFixed(2)} {unit}</Text>;
+        return <Text strong style={{ fontSize: '16px', color: token.colorError }}>{Number(val).toFixed(2)} {unit}</Text>;
+      }
+    },
+    {
+      title: 'Increase',
+      key: 'increase',
+      render: (_: any, record: PeakRecord) => {
+        if (record.previous_value === undefined || record.previous_value === null || record.previous_value === 0) return <Tag color="green">New Record</Tag>;
+        if (record.value === undefined || record.value === null) return null;
+        
+        const diff = record.value - record.previous_value;
+        const percent = (diff / record.previous_value) * 100;
+        
+        const color = percent > 50 ? 'volcano' : 'orange';
+        return <Tag color={color} icon={<RiseOutlined />}>+{percent.toFixed(1)}%</Tag>;
       }
     },
     {
@@ -129,11 +180,22 @@ export const PeakAnalysis = () => {
           <Title level={3} style={{ margin: 0 }}>Peak Value Analysis</Title>
           <Text type="secondary">Historical maximum values recorded across the network</Text>
         </Space>
-        <RiseOutlined style={{ fontSize: '32px', color: token.colorPrimary, opacity: 0.5 }} />
+        
+        <Space size="large">
+          <Segmented
+            value={viewMode}
+            onChange={(val: any) => setViewMode(val)}
+            options={[
+              { label: 'Highest Only', value: 'highest', icon: <TrophyOutlined /> },
+              { label: 'Full History', value: 'history', icon: <HistoryOutlined /> },
+            ]}
+          />
+          <RiseOutlined style={{ fontSize: '32px', color: token.colorPrimary, opacity: 0.5 }} />
+        </Space>
       </div>
 
       <Table 
-        dataSource={data} 
+        dataSource={filteredData} 
         columns={columns} 
         loading={loading}
         rowKey={(record) => `${record.device_id}-${record.metric}-${record._time}`}

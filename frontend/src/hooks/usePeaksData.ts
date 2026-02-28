@@ -6,6 +6,7 @@ export interface PeakRecord {
   device_id: string;
   metric: string;
   value: number;
+  previous_value?: number;
 }
 
 export const usePeaksData = () => {
@@ -37,6 +38,7 @@ export const usePeaksData = () => {
             device_id: update.id.toString(),
             metric: update.metric,
             value: update.value,
+            previous_value: update.previous_value,
           };
           
           setData((prev) => {

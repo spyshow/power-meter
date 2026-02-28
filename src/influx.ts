@@ -103,8 +103,8 @@ export const queryAllPeaks = (): Promise<any[]> => {
   const query = `from(bucket: "${bucket}")
     |> range(start: -30d)
     |> filter(fn: (r) => r["_measurement"] == "peak_events")
-    |> last()
-    |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")`;
+    |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+    |> sort(columns: ["_time"], desc: true)`;
 
   return new Promise((resolve, reject) => {
     const results: any[] = [];

@@ -62,18 +62,6 @@ services:
       timeout: 5s
       retries: 5
 
-  watchtower:
-    image: nickfedor/watchtower
-    container_name: power-meter-watchtower
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - WATCHTOWER_POLL_INTERVAL=60
-      - WATCHTOWER_CLEANUP=true
-      - WATCHTOWER_INCLUDE_STOPPED=true
-      - WATCHTOWER_REVIVE_STOPPED=true
-    restart: always
-
 networks:
   power-meter-network:
     driver: bridge

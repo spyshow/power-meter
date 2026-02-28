@@ -24,7 +24,13 @@ const REG_KVA_TOT = 3060 - 1;
 // Alternatively, let's just make the existing calls more robust.
 
 let isConnected = false;
-const deviceStatus: Record<number, { status: 'online' | 'offline', failCount: number }> = {};
+export const deviceStatus: Record<number, { 
+  status: 'online' | 'offline'; 
+  failCount: number;
+  voltage?: number;
+  current?: number;
+  kva?: number;
+}> = {};
 
 export const connectModbus = async () => {
   if (isConnected) return;
@@ -79,15 +85,18 @@ export const pollDevice = async (id: number) => {
     const voltage = await readFloat(REG_VOLTAGE_LL_AVG);
     const kva = await readFloat(REG_KVA_TOT);
 
-    // Sanity check: If values are exactly 0 but status was online, 
-    // it might be a temporary read glitch on the gateway side.
-    // However, we should report what we get unless it's impossible.
-    
-    deviceStatus[id].failCount = 0;
+    // Update local status cache
+    deviceStatus[id] = {
+      ...deviceStatus[id],
+      voltage,
+      current,
+      kva,
+      failCount: 0,
+      status: 'online'
+    };
     
     if (deviceStatus[id].status === 'offline') {
       console.log(`Device ${id} is now ONLINE`);
-      deviceStatus[id].status = 'online';
     }
 
     // Check for peaks

@@ -19,11 +19,11 @@ export const Dashboard = () => {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
   useEffect(() => {
-    axios.get('http://localhost:3001/devices').then((res) => {
+    axios.get('/api/devices').then((res) => {
       setDevices(res.data);
       setLoading(false);
     }).catch(err => {
-      setError("Cannot connect to backend server. Please ensure the backend is running on port 3001.");
+      setError("Cannot connect to backend server. Please ensure the backend and proxy are running.");
       setLoading(false);
     });
   }, []);

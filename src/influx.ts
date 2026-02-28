@@ -121,3 +121,62 @@ export const queryAllPeaks = (): Promise<any[]> => {
     });
   });
 };
+
+export interface ReportParams {
+  deviceIds: string[];
+  metrics: string[];
+  range?: string; // e.g. 1h, 6h, 24h, 6d
+  start?: string; // ISO string for custom range
+  stop?: string;  // ISO string for custom range
+  granularity: 'raw' | 'aggregated';
+}
+
+export const queryReportData = (params: ReportParams): Promise<any[]> => {
+  const queryApi = influxDB.getQueryApi(org);
+  
+  let rangeClause = '';
+  if (params.range) {
+    rangeClause = `|> range(start: -${params.range})`;
+  } else if (params.start && params.stop) {
+    rangeClause = `|> range(start: ${params.start}, stop: ${params.stop})`;
+  } else {
+    rangeClause = `|> range(start: -1h)`; // Default
+  }
+
+  const deviceFilter = params.deviceIds.map(id => `r["device_id"] == "${id}"`).join(' or ');
+  const metricFilter = params.metrics.map(m => `r["_field"] == "${m}"`).join(' or ');
+
+  let aggregation = '';
+  if (params.granularity === 'aggregated') {
+    // Determine interval based on range
+    let interval = '1m'; // Default for aggregation
+    if (params.range === '6d') interval = '1h';
+    else if (params.range === '24h') interval = '10m';
+    else if (params.range === '6h') interval = '5m';
+    
+    aggregation = `|> aggregateWindow(every: ${interval}, fn: mean, createEmpty: false)`;
+  }
+
+  const query = `from(bucket: "${bucket}")
+    ${rangeClause}
+    |> filter(fn: (r) => r["_measurement"] == "power_consumption")
+    |> filter(fn: (r) => (${deviceFilter}))
+    |> filter(fn: (r) => (${metricFilter}))
+    ${aggregation}
+    |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")`;
+
+  return new Promise((resolve, reject) => {
+    const results: any[] = [];
+    queryApi.queryRows(query, {
+      next(row, tableMeta) {
+        results.push(tableMeta.toObject(row));
+      },
+      error(error) {
+        reject(error);
+      },
+      complete() {
+        resolve(results);
+      },
+    });
+  });
+};

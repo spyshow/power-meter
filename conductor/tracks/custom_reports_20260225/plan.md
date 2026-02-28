@@ -1,18 +1,18 @@
 # Implementation Plan - Custom Report Generation
 
 ## Phase 1: Backend Infrastructure & Data Processing
-- [ ] Task: Report Data Aggregation Logic
-    - [ ] Write Verification: Unit tests for InfluxDB query aggregation (min/max/avg)
-    - [ ] Implement: Backend service to query and process data based on granularity (raw/aggregated)
-- [ ] Task: Excel Generation Service
-    - [ ] Write Verification: Tests for creating .xlsx files from JSON data
-    - [ ] Implement: Export service using `xlsx` or `exceljs` library
-- [ ] Task: PDF Generation Service (Puppeteer)
-    - [ ] Write Verification: Tests for PDF rendering from HTML templates
-    - [ ] Implement: Puppeteer setup to render charts and tables into PDF
-- [ ] Task: Local Storage & File Management
-    - [ ] Implement: Utility to save files to `reports/` folder and manage filenames
-- [ ] Task: Conductor - User Manual Verification 'Backend Infrastructure' (Protocol in workflow.md)
+- [x] Task: Report Data Aggregation Logic [80490cf]
+    - [x] Write Verification: Unit tests for InfluxDB query aggregation (min/max/avg)
+    - [x] Implement: Backend service to query and process data based on granularity (raw/aggregated)
+- [x] Task: Excel Generation Service [0f14161]
+    - [x] Write Verification: Tests for creating .xlsx files from JSON data
+    - [x] Implement: Export service using `xlsx` or `exceljs` library
+- [x] Task: PDF Generation Service (Puppeteer) [0f14161]
+    - [x] Write Verification: Tests for PDF rendering from HTML templates
+    - [x] Implement: Puppeteer setup to render charts and tables into PDF
+- [x] Task: Local Storage & File Management [0f14161]
+    - [x] Implement: Utility to save files to `reports/` folder and manage filenames
+- [~] Task: Conductor - User Manual Verification 'Backend Infrastructure' (Protocol in workflow.md)
 
 ## Phase 2: Frontend Report Page & Configuration
 - [ ] Task: Report Configuration UI

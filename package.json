@@ -21,8 +21,10 @@
     "@influxdata/influxdb-client": "^1.35.0",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
+    "exceljs": "^4.4.0",
     "express": "^5.2.1",
-    "modbus-serial": "^8.0.23"
+    "modbus-serial": "^8.0.23",
+    "puppeteer": "^24.37.5"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

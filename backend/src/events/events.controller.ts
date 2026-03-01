@@ -13,7 +13,7 @@ export class EventsController {
     );
 
     const peakEvent = fromEvent(this.eventEmitter, 'peak.detected').pipe(
-      map((data) => ({ data: JSON.stringify({ type: 'peak', ...data }) } as MessageEvent)),
+      map((data: any) => ({ data: JSON.stringify({ type: 'peak', ...data }) } as MessageEvent)),
     );
 
     return merge(updateEvent, peakEvent);

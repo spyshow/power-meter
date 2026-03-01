@@ -16,7 +16,7 @@ Transition the backend to NestJS and configure the TimeScaleDB connection.
 ## Phase 2: Authentication Core (TDD)
 Implement the core login and JWT issuance logic.
 
-- [ ] Task: Implement User Service with Password Hashing
+- [x] Task: Implement User Service with Password Hashing [279d913]
     - [ ] Write failing tests for user creation and password hashing (BCrypt)
     - [ ] Implement `UserService.create` and `UserService.findOneByUsername`
 - [ ] Task: Implement Auth Service and JWT Strategy

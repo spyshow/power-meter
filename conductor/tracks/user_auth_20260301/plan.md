@@ -30,7 +30,7 @@ Implement the core login and JWT issuance logic.
 ## Phase 3: Authorization & Role-Based Access Control
 Protect endpoints and implement role checks.
 
-- [ ] Task: Implement Role Guards and Decorators
+- [x] Task: Implement Role Guards and Decorators [871e2f2]
     - [ ] Create `@Roles()` decorator and `RolesGuard`
     - [ ] Write tests for unauthorized/authorized access based on roles
 - [ ] Task: Protect Existing Telemetry Endpoints

@@ -14,7 +14,7 @@ Setup the new TimescaleDB container and scaffold the NestJS backend.
 Define the database schema and implement the telemetry logging service.
 
 - [x] Task: Define Drizzle schema for Telemetry (Voltage, Amps, kVA) and Peaks [d0bbc6e]
-- [ ] Task: Implement TimescaleDB Hypertable initialization script/migration
+- [x] Task: Implement TimescaleDB Hypertable initialization script/migration [feea84f]
 - [ ] Task: Write failing tests for Telemetry Repository (Drizzle)
 - [ ] Task: Implement Telemetry Repository to save and query 1-second data
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Data Layer Implementation' (Protocol in workflow.md)

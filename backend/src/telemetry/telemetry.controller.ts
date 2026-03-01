@@ -1,11 +1,17 @@
-import { Controller, Get, Query, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Query, BadRequestException, UseGuards } from '@nestjs/common';
 import { TelemetryRepository } from '../database/telemetry.repository';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../auth/role.enum';
 
 @Controller()
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class TelemetryController {
   constructor(private telemetryRepo: TelemetryRepository) {}
 
   @Get('devices')
+  @Roles(Role.Admin, Role.Operator, Role.Viewer)
   getDevices() {
     // Ported from src/devices.ts
     return [
@@ -19,6 +25,7 @@ export class TelemetryController {
   }
 
   @Get('history')
+  @Roles(Role.Admin, Role.Operator, Role.Viewer)
   async getHistory(
     @Query('deviceId') deviceId: string,
     @Query('range') range: string,

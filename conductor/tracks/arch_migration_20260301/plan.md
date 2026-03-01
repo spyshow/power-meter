@@ -22,8 +22,8 @@ Define the database schema and implement the telemetry logging service.
 ## Phase 3: Core Service Migration (Modbus & Logging)
 Port the industrial communication and logging logic to NestJS services.
 
-- [ ] Task: Write failing tests for `ModbusService` (NestJS port of `modbus-serial` logic)
-- [ ] Task: Implement `ModbusService` in NestJS
+- [x] Task: Write failing tests for `ModbusService` (NestJS port of `modbus-serial` logic) [affcf16]
+- [x] Task: Implement `ModbusService` in NestJS [affcf16]
 - [ ] Task: Write failing tests for `LoggingService` (orchestrates Modbus reading and DB saving)
 - [ ] Task: Implement `LoggingService` in NestJS
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: Core Service Migration' (Protocol in workflow.md)

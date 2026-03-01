@@ -40,7 +40,7 @@ Protect endpoints and implement role checks.
 ## Phase 4: Admin Management & UI Integration
 Build the admin dashboard and integrate with Refine frontend.
 
-- [ ] Task: Implement User Management Endpoints (Admin Only)
+- [x] Task: Implement User Management Endpoints (Admin Only) [2f66c9c]
     - [ ] Write tests for User CRUD (Create, Read, Update, Delete)
     - [ ] Implement `UserController` with `@Roles(Role.Admin)`
 - [ ] Task: Frontend Integration - Login Page

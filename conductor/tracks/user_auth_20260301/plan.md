@@ -43,10 +43,10 @@ Build the admin dashboard and integrate with Refine frontend.
 - [x] Task: Implement User Management Endpoints (Admin Only) [2f66c9c]
     - [ ] Write tests for User CRUD (Create, Read, Update, Delete)
     - [ ] Implement `UserController` with `@Roles(Role.Admin)`
-- [ ] Task: Frontend Integration - Login Page
-    - [ ] Create Login page in Refine using Ant Design
-    - [ ] Implement `authProvider` in Refine to handle JWT
-- [ ] Task: Frontend Integration - Admin Dashboard
-    - [ ] Create User Management resource in Refine (Admin only)
-    - [ ] Implement role-based navigation visibility
+- [x] Task: Frontend Integration - Login Page [83e2dd6]
+    - [x] Create Login page in Refine using Ant Design
+    - [x] Implement `authProvider` in Refine to handle JWT
+- [x] Task: Frontend Integration - Admin Dashboard [83e2dd6]
+    - [x] Create User Management resource in Refine (Admin only)
+    - [x] Implement role-based navigation visibility
 - [ ] Task: Conductor - User Manual Verification 'Phase 4: Admin & UI' (Protocol in workflow.md)

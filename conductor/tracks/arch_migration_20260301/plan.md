@@ -33,8 +33,8 @@ Port the peak detection logic and API endpoints to NestJS controllers.
 
 - [x] Task: Write failing tests for `PeakService` (NestJS port) [6be5b8f]
 - [x] Task: Implement `PeakService` and integration with TimescaleDB [6be5b8f]
-- [~] Task: Port Telemetry and Peaks API controllers to NestJS
-- [ ] Task: Port SSE (Server-Sent Events) or WebSocket logic for real-time updates
+- [x] Task: Port Telemetry and Peaks API controllers to NestJS [a91dc02]
+- [~] Task: Port SSE (Server-Sent Events) or WebSocket logic for real-time updates
 - [ ] Task: Conductor - User Manual Verification 'Phase 4: Feature Migration' (Protocol in workflow.md)
 
 ## Phase 5: Integration & Verification

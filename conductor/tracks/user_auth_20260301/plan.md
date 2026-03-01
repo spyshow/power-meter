@@ -19,7 +19,7 @@ Implement the core login and JWT issuance logic.
 - [x] Task: Implement User Service with Password Hashing [279d913]
     - [ ] Write failing tests for user creation and password hashing (BCrypt)
     - [ ] Implement `UserService.create` and `UserService.findOneByUsername`
-- [ ] Task: Implement Auth Service and JWT Strategy
+- [x] Task: Implement Auth Service and JWT Strategy [b0ac843]
     - [ ] Write failing tests for credential validation and JWT generation
     - [ ] Implement `AuthService.login` and NestJS `JwtStrategy`
 - [ ] Task: Create Login Endpoint

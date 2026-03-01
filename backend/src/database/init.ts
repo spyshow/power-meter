@@ -55,6 +55,17 @@ export class DatabaseInitService implements OnModuleInit {
         );
       `);
 
+      // Ensure users table exists
+      await this.db.execute(sql`
+        CREATE TABLE IF NOT EXISTS users (
+          id SERIAL PRIMARY KEY,
+          username VARCHAR(255) NOT NULL UNIQUE,
+          password TEXT NOT NULL,
+          role VARCHAR(50) NOT NULL DEFAULT 'viewer',
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+      `);
+
       console.log('[DatabaseInit] Database initialization complete.');
     } catch (error) {
       console.error('[DatabaseInit] Error during database initialization:', error);

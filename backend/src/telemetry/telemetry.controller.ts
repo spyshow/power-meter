@@ -36,7 +36,7 @@ export class TelemetryController {
       if (match) {
         const value = parseInt(match[1], 10);
         const unit = match[2];
-        const msMap = { m: 60 * 1000, h: 60 * 60 * 1000, d: 24 * 60 * 60 * 1000 };
+        const msMap: Record<string, number> = { m: 60 * 1000, h: 60 * 60 * 1000, d: 24 * 60 * 60 * 1000 };
         startTime = new Date(now.getTime() - value * msMap[unit]);
       }
     }
@@ -44,7 +44,7 @@ export class TelemetryController {
     const data = await this.telemetryRepo.getHistory(id, startTime);
     
     // Map to frontend format (_time instead of timestamp)
-    return data.map(row => ({
+    return data.map((row: any) => ({
       _time: row.timestamp,
       voltage: row.voltage,
       current: row.current,

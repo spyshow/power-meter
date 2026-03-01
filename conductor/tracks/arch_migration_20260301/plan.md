@@ -2,13 +2,13 @@
 
 This plan outlines the staged migration of the MCGI Power Logger backend to NestJS and TimescaleDB using Drizzle ORM.
 
-## Phase 1: Infrastructure Setup
+## Phase 1: Infrastructure Setup [checkpoint: 404d16d]
 Setup the new TimescaleDB container and scaffold the NestJS backend.
 
 - [x] Task: Update `docker-compose.yml` to include TimescaleDB (PostgreSQL) and remove InfluxDB [03f2d16]
 - [x] Task: Scaffold a new NestJS backend in a `backend/` directory (or refactor existing structure) [43fd586]
 - [x] Task: Configure Drizzle ORM and PostgreSQL connection in NestJS [2696c87]
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Infrastructure Setup' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Infrastructure Setup' (Protocol in workflow.md) [404d16d]
 
 ## Phase 2: Data Layer Implementation
 Define the database schema and implement the telemetry logging service.

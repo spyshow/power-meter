@@ -48,3 +48,4 @@ Connect the frontend to the new API and perform full system validation.
 ## Phase: Review Fixes
 - [x] Task: Apply review suggestions [3312eab]
 - [x] Task: Resolve Docker build and TypeScript errors [8ef26e7]
+- [x] Task: Resolve circular dependency and undefined DRIZZLE_PROVIDER [994bc7a]

@@ -2,7 +2,7 @@ import { Controller, Get, Inject } from '@nestjs/common';
 import { DRIZZLE_PROVIDER } from '../database/constants';
 import { peaks } from '../database/schema';
 
-@Controller('api/peaks')
+@Controller('peaks')
 export class PeaksController {
   constructor(@Inject(DRIZZLE_PROVIDER) private db: any) {}
 

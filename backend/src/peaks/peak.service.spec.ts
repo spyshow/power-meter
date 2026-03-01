@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PeakService } from './peak.service';
-import { DRIZZLE_PROVIDER } from '../database/database.module';
+import { DRIZZLE_PROVIDER } from '../database/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 describe('PeakService', () => {

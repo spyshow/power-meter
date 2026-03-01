@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TelemetryRepository } from './telemetry.repository';
-import { DRIZZLE_PROVIDER } from './database.module';
+import { DRIZZLE_PROVIDER } from './constants';
 
 describe('TelemetryRepository', () => {
   let repository: TelemetryRepository;

@@ -2,7 +2,7 @@ import { Controller, Sse, MessageEvent } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Observable, fromEvent, map, merge } from 'rxjs';
 
-@Controller('api/events')
+@Controller('events')
 export class EventsController {
   constructor(private eventEmitter: EventEmitter2) {}
 

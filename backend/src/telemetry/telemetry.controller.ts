@@ -1,7 +1,7 @@
 import { Controller, Get, Query, BadRequestException } from '@nestjs/common';
 import { TelemetryRepository } from '../database/telemetry.repository';
 
-@Controller('api')
+@Controller()
 export class TelemetryController {
   constructor(private telemetryRepo: TelemetryRepository) {}
 

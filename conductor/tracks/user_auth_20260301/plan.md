@@ -13,19 +13,19 @@ Transition the backend to NestJS and configure the TimeScaleDB connection.
     - [x] Implement TypeORM or Drizzle (or raw SQL) entity for Users
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Infrastructure' (Protocol in workflow.md) [475f62c]
 
-## Phase 2: Authentication Core (TDD)
+## Phase 2: Authentication Core (TDD) [checkpoint: 35e83f4]
 Implement the core login and JWT issuance logic.
 
 - [x] Task: Implement User Service with Password Hashing [279d913]
-    - [ ] Write failing tests for user creation and password hashing (BCrypt)
-    - [ ] Implement `UserService.create` and `UserService.findOneByUsername`
+    - [x] Write failing tests for user creation and password hashing (BCrypt)
+    - [x] Implement `UserService.create` and `UserService.findOneByUsername`
 - [x] Task: Implement Auth Service and JWT Strategy [b0ac843]
-    - [ ] Write failing tests for credential validation and JWT generation
-    - [ ] Implement `AuthService.login` and NestJS `JwtStrategy`
+    - [x] Write failing tests for credential validation and JWT generation
+    - [x] Implement `AuthService.login` and NestJS `JwtStrategy`
 - [x] Task: Create Login Endpoint [ff5cde3]
-    - [ ] Write failing tests for `POST /auth/login`
-    - [ ] Implement `AuthController`
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Authentication Core' (Protocol in workflow.md)
+    - [x] Write failing tests for `POST /auth/login`
+    - [x] Implement `AuthController`
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Authentication Core' (Protocol in workflow.md) [35e83f4]
 
 ## Phase 3: Authorization & Role-Based Access Control
 Protect endpoints and implement role checks.

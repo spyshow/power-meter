@@ -27,15 +27,15 @@ Implement the core login and JWT issuance logic.
     - [x] Implement `AuthController`
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Authentication Core' (Protocol in workflow.md) [35e83f4]
 
-## Phase 3: Authorization & Role-Based Access Control
+## Phase 3: Authorization & Role-Based Access Control [checkpoint: d0662d8]
 Protect endpoints and implement role checks.
 
 - [x] Task: Implement Role Guards and Decorators [871e2f2]
-    - [ ] Create `@Roles()` decorator and `RolesGuard`
-    - [ ] Write tests for unauthorized/authorized access based on roles
+    - [x] Create `@Roles()` decorator and `RolesGuard`
+    - [x] Write tests for unauthorized/authorized access based on roles
 - [x] Task: Protect Existing Telemetry Endpoints [912ceac]
-    - [ ] Apply `RolesGuard` to data fetching routes (Viewer role minimum)
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Authorization' (Protocol in workflow.md)
+    - [x] Apply `RolesGuard` to data fetching routes (Viewer role minimum)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Authorization' (Protocol in workflow.md) [d0662d8]
 
 ## Phase 4: Admin Management & UI Integration
 Build the admin dashboard and integrate with Refine frontend.

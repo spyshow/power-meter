@@ -59,4 +59,17 @@ describe('TelemetryRepository', () => {
     expect(mockDb.where).toHaveBeenCalled();
     expect(result).toBeDefined();
   });
+
+  it('should query history for a device', async () => {
+    const deviceId = 10;
+    const startTime = new Date();
+    mockDb.orderBy.mockResolvedValue([{ deviceId, voltage: 230 }]);
+
+    const result = await repository.getHistory(deviceId, startTime);
+
+    expect(mockDb.select).toHaveBeenCalled();
+    expect(mockDb.from).toHaveBeenCalled();
+    expect(mockDb.where).toHaveBeenCalled();
+    expect(result).toBeDefined();
+  });
 });

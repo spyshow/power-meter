@@ -30,6 +30,7 @@ export class TelemetryController {
     const id = parseInt(deviceId, 10);
     const now = new Date();
     let startTime = new Date(now.getTime() - 60 * 60 * 1000); // Default 1h
+    let interval = '5s';
 
     if (range) {
       const match = range.match(/^(\d+)([mhd])$/);
@@ -38,17 +39,25 @@ export class TelemetryController {
         const unit = match[2];
         const msMap: Record<string, number> = { m: 60 * 1000, h: 60 * 60 * 1000, d: 24 * 60 * 60 * 1000 };
         startTime = new Date(now.getTime() - value * msMap[unit]);
+
+        // Determine aggregation interval
+        if (unit === 'm') interval = '1s';
+        else if (unit === 'h') {
+          if (value <= 1) interval = '5s';
+          else if (value <= 6) interval = '30s';
+          else interval = '1m';
+        } else if (unit === 'd') interval = '5m';
       }
     }
 
-    const data = await this.telemetryRepo.getHistory(id, startTime);
+    const data = await this.telemetryRepo.getHistory(id, startTime, interval);
     
     // Map to frontend format (_time instead of timestamp)
     return data.map((row: any) => ({
       _time: row.timestamp,
-      voltage: row.voltage,
-      current: row.current,
-      kva: row.kva,
+      voltage: parseFloat(row.voltage),
+      current: parseFloat(row.current),
+      kva: parseFloat(row.kva),
     }));
   }
 }

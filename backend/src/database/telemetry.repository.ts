@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { DRIZZLE_PROVIDER } from './constants';
 import { telemetry } from './schema';
-import { eq, desc, asc, gte, and } from 'drizzle-orm';
+import { eq, desc, asc, gte, and, sql } from 'drizzle-orm';
 
 @Injectable()
 export class TelemetryRepository {
@@ -27,16 +27,31 @@ export class TelemetryRepository {
     return results[0];
   }
 
-  async getHistory(deviceId: number, startTime: Date) {
-    return await this.db
-      .select()
-      .from(telemetry)
-      .where(
-        and(
-          eq(telemetry.deviceId, deviceId),
-          gte(telemetry.timestamp, startTime)
+  async getHistory(deviceId: number, startTime: Date, interval?: string) {
+    if (!interval || interval === '1s') {
+      return await this.db
+        .select()
+        .from(telemetry)
+        .where(
+          and(
+            eq(telemetry.deviceId, deviceId),
+            gte(telemetry.timestamp, startTime)
+          )
         )
-      )
-      .orderBy(asc(telemetry.timestamp));
+        .orderBy(asc(telemetry.timestamp));
+    }
+
+    // Use TimescaleDB time_bucket for aggregation
+    return await this.db.execute(sql`
+      SELECT 
+        time_bucket(${sql.raw(`'${interval}'`)}, timestamp) AS timestamp,
+        AVG(voltage) as voltage,
+        AVG(current) as current,
+        AVG(kva) as kva
+      FROM telemetry
+      WHERE device_id = ${deviceId} AND timestamp >= ${startTime}
+      GROUP BY timestamp
+      ORDER BY timestamp ASC
+    `);
   }
 }

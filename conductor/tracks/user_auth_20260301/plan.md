@@ -8,7 +8,7 @@ Transition the backend to NestJS and configure the TimeScaleDB connection.
 - [x] Task: Scaffold NestJS backend in a new directory or replace existing Express logic [5b35c0c]
     - [ ] Initialize NestJS project
     - [ ] Configure environment variables for TimeScaleDB
-- [ ] Task: Implement TimeScaleDB connection and User Schema
+- [x] Task: Implement TimeScaleDB connection and User Schema [98c2591]
     - [ ] Create `Users` table migration in TimeScaleDB
     - [ ] Implement TypeORM or Drizzle (or raw SQL) entity for Users
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Infrastructure' (Protocol in workflow.md)

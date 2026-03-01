@@ -55,10 +55,10 @@ export class PeakService implements OnModuleInit {
 
         // Emit peak detection event for real-time UI
         this.eventEmitter.emit('peak.detected', {
-          deviceId,
+          id: deviceId,
           metric,
           value,
-          previousValue,
+          previous_value: previousValue,
         });
         
         console.log(`[PeakService] New Peak for Device ${deviceId} (${metric}): ${value} (was ${previousValue})`);

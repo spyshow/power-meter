@@ -6,17 +6,17 @@ WORKDIR /app
 # Tell Puppeteer to skip downloading the browser (we will install it via apk)
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 
-# Copy package files separately to leverage layer caching
-COPY package.json package-lock.json ./
+# Copy backend package files separately to leverage layer caching
+COPY backend/package.json backend/package-lock.json ./backend/
 
-# Install all dependencies (including devDependencies) for compilation
-RUN npm ci --quiet
+# Install all dependencies for the backend
+RUN cd backend && npm ci --quiet
 
-# Copy source code and config
-COPY . .
+# Copy backend source code and config
+COPY backend/ ./backend/
 
-# Build the TypeScript project
-RUN npm run build
+# Build the NestJS project
+RUN cd backend && npm run build
 
 # Stage 2: Run
 FROM node:20-alpine AS runner
@@ -38,16 +38,17 @@ RUN apk add --no-cache \
       ca-certificates \
       ttf-freefont
 
-# Copy package files for production dependency installation
-COPY package.json package-lock.json ./
+# Copy backend package files for production dependency installation
+COPY backend/package.json backend/package-lock.json ./backend/
 
-# Install only production dependencies
-RUN npm ci --quiet --omit=dev
+# Install only production dependencies for the backend
+RUN cd backend && npm ci --quiet --omit=dev
 
 # Copy compiled code from builder stage
-COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/backend/dist ./backend/dist
 
 # The backend listens on 3001
 EXPOSE 3001
 
-CMD ["node", "dist/index.js"]
+# Run the NestJS application
+CMD ["node", "backend/dist/main.js"]

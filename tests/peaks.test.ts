@@ -24,9 +24,9 @@ describe('PeakService', () => {
     expect(influx.writeData).toHaveBeenCalledWith(
       'peak_events',
       { device_id: '10', metric: 'voltage' },
-      { value: 230.5 }
+      { value: 230.5, previous_value: 0 }
     );
-    expect(events.emitPeakDetected).toHaveBeenCalledWith(deviceId, metric, value);
+    expect(events.emitPeakDetected).toHaveBeenCalledWith(deviceId, metric, { value: 230.5, previous_value: 0 });
   });
 
   it('should NOT update peak if value is lower or equal', async () => {

@@ -1,8 +1,8 @@
 {
   "track_id": "custom_reports_20260225",
   "type": "feature",
-  "status": "new",
+  "status": "in_progress",
   "created_at": "2026-02-25T13:25:00Z",
-  "updated_at": "2026-02-25T13:25:00Z",
-  "description": "Add a report page for device/metric selection with PDF/Excel export and persistent archive."
+  "updated_at": "2026-03-01T10:00:00Z",
+  "description": "I want to build a report generation page, where i can select the devices i need and the values required and the duration and then i can generate a task as PDF or xlsx to download , also there should be a button to subscripe to this report so every specifc time (can be selected from the user like every hour , every day .... , or a specifc date like first of every month , or a specifc time and date can be selected from a calander form field ) it will save this to the local machine that is hosting the docker container hard drive"
 }

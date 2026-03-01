@@ -40,7 +40,7 @@ Port the peak detection logic and API endpoints to NestJS controllers.
 ## Phase 5: Integration & Verification
 Connect the frontend to the new API and perform full system validation.
 
-- [ ] Task: Update Frontend environment variables to point to the new NestJS API
+- [x] Task: Update Frontend environment variables to point to the new NestJS API [0e76c6c]
 - [ ] Task: Verify real-time dashboard updates with the new backend
 - [ ] Task: Verify historical trend charts with TimescaleDB data
 - [ ] Task: Conductor - User Manual Verification 'Phase 5: Integration & Verification' (Protocol in workflow.md)

@@ -24,8 +24,8 @@ Port the industrial communication and logging logic to NestJS services.
 
 - [x] Task: Write failing tests for `ModbusService` (NestJS port of `modbus-serial` logic) [affcf16]
 - [x] Task: Implement `ModbusService` in NestJS [affcf16]
-- [ ] Task: Write failing tests for `LoggingService` (orchestrates Modbus reading and DB saving)
-- [ ] Task: Implement `LoggingService` in NestJS
+- [x] Task: Write failing tests for `LoggingService` (orchestrates Modbus reading and DB saving) [43556ac]
+- [x] Task: Implement `LoggingService` in NestJS [43556ac]
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: Core Service Migration' (Protocol in workflow.md)
 
 ## Phase 4: Feature Migration (Peaks & API)

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Refine } from '@refinedev/core';
+import { Refine, Authenticated } from '@refinedev/core';
 import { 
   notificationProvider, 
   ThemedLayoutV2, 
@@ -8,12 +8,15 @@ import {
   ThemedSiderV2
 } from '@refinedev/antd';
 import { ConfigProvider, theme, Switch, Space, Typography } from 'antd';
-import routerBindings, { UnsavedChangesNotifier } from '@refinedev/react-router-v6';
+import routerBindings, { UnsavedChangesNotifier, CatchAllNavigate, NavigateToResource } from '@refinedev/react-router-v6';
 import dataProvider from '@refinedev/simple-rest';
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
-import { DashboardOutlined, GlobalOutlined, BulbOutlined, BulbFilled, RiseOutlined } from '@ant-design/icons';
+import { DashboardOutlined, GlobalOutlined, BulbOutlined, BulbFilled, RiseOutlined, UserOutlined } from '@ant-design/icons';
 import { Dashboard } from './pages/Dashboard';
 import { PeakAnalysis } from './pages/PeakAnalysis';
+import { LoginPage } from './pages/Login';
+import { UserList, UserCreate, UserEdit } from './pages/Users';
+import { authProvider } from './authProvider';
 import '@refinedev/antd/dist/reset.css';
 
 const { Text } = Typography;
@@ -47,6 +50,7 @@ const App = () => {
         <Refine
           routerProvider={routerBindings}
           dataProvider={dataProvider('/api')}
+          authProvider={authProvider}
           notificationProvider={notificationProvider}
           options={{
             syncWithLocation: true,
@@ -70,58 +74,87 @@ const App = () => {
                 icon: <RiseOutlined />,
               }
             },
+            {
+              name: 'users',
+              list: '/users',
+              create: '/users/create',
+              edit: '/users/edit/:id',
+              meta: {
+                label: 'User Management',
+                icon: <UserOutlined />,
+              }
+            },
           ]}
         >
           <Routes>
             <Route
               element={
-                <ThemedLayoutV2 
-                  Header={() => null}
-                  Sider={(props) => (
-                    <ThemedSiderV2 
-                      {...props} 
-                      render={({ items, logout, collapsed }) => {
-                        return (
-                          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                            <div style={{ flex: 1 }}>
-                              {items}
-                            </div>
-                            <div style={{ 
-                              padding: '16px', 
-                              borderTop: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)'}`,
-                              display: 'flex',
-                              justifyContent: collapsed ? 'center' : 'space-between',
-                              alignItems: 'center'
-                            }}>
-                              {!collapsed && (
-                                <Space size={4}>
-                                  {isDarkMode ? <BulbFilled /> : <BulbOutlined />}
-                                  <Text style={{ color: 'inherit', fontSize: '12px' }}>Dark Mode</Text>
-                                </Space>
-                              )}
-                              <Switch 
-                                size="small" 
-                                checked={isDarkMode} 
-                                onChange={(checked) => setIsDarkMode(checked)} 
-                              />
-                            </div>
-                            {logout}
-                          </div>
-                        );
-                      }}
-                    />
-                  )}
-                  Title={({ collapsed }) => (
-                    <TitleComponent collapsed={collapsed} isDarkMode={isDarkMode} />
-                  )}
+                <Authenticated
+                  key="authenticated-inner"
+                  fallback={<CatchAllNavigate to="/login" />}
                 >
-                  <Outlet />
-                </ThemedLayoutV2>
+                  <ThemedLayoutV2 
+                    Header={() => null}
+                    Sider={(props) => (
+                      <ThemedSiderV2 
+                        {...props} 
+                        render={({ items, logout, collapsed }) => {
+                          return (
+                            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                              <div style={{ flex: 1 }}>
+                                {items}
+                              </div>
+                              <div style={{ 
+                                padding: '16px', 
+                                borderTop: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)'}`,
+                                display: 'flex',
+                                justifyContent: collapsed ? 'center' : 'space-between',
+                                alignItems: 'center'
+                              }}>
+                                {!collapsed && (
+                                  <Space size={4}>
+                                    {isDarkMode ? <BulbFilled /> : <BulbOutlined />}
+                                    <Text style={{ color: 'inherit', fontSize: '12px' }}>Dark Mode</Text>
+                                  </Space>
+                                )}
+                                <Switch 
+                                  size="small" 
+                                  checked={isDarkMode} 
+                                  onChange={(checked) => setIsDarkMode(checked)} 
+                                />
+                              </div>
+                              {logout}
+                            </div>
+                          );
+                        }}
+                      />
+                    )}
+                    Title={({ collapsed }) => (
+                      <TitleComponent collapsed={collapsed} isDarkMode={isDarkMode} />
+                    )}
+                  >
+                    <Outlet />
+                  </ThemedLayoutV2>
+                </Authenticated>
               }
             >
               <Route index element={<Dashboard />} />
               <Route path="/peaks" element={<PeakAnalysis />} />
+              <Route path="/users">
+                <Route index element={<UserList />} />
+                <Route path="create" element={<UserCreate />} />
+                <Route path="edit/:id" element={<UserEdit />} />
+              </Route>
               <Route path="*" element={<ErrorComponent />} />
+            </Route>
+            <Route
+              element={
+                <Authenticated key="authenticated-outer" fallback={<Outlet />}>
+                  <NavigateToResource />
+                </Authenticated>
+              }
+            >
+              <Route path="/login" element={<LoginPage />} />
             </Route>
           </Routes>
           <UnsavedChangesNotifier />

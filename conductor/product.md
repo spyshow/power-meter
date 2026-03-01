@@ -22,6 +22,8 @@ A centralized web-based dashboard for monitoring and analyzing power consumption
 - **Telemetry Trends:** Interactive, live-updating charts to visualize historical data with dynamic aggregation for performance.
 - **Peak Value Monitoring:** Dedicated analysis page tracking all-time maximum values for every device and metric with real-time updates.
 - **Theme Support:** Fully responsive UI with integrated Dark Mode support.
+- **Secure Authentication:** JWT-based login system to protect sensitive data and configuration.
+- **Role-Based Access Control:** Fine-grained permissions for Admin (Full access), Operator (Data & Reports), and Viewer (Read-only) roles.
 - **Containerized Deployment:** Entire stack (Frontend, Backend, TimescaleDB) is containerized for consistent deployment across environments.
 - **Automated CI/CD Pipeline:** Automated testing, building, and deployment via GitHub Actions, Docker Hub, and Watchtower.
 

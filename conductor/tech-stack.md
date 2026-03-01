@@ -10,6 +10,8 @@
 - **Runtime:** Node.js
 - **Framework:** NestJS
 - **Language:** TypeScript
+- **Authentication:** JWT (JSON Web Tokens) with Passport.js
+- **Security:** BCrypt for password hashing
 
 ## Database
 - **Primary:** TimescaleDB (PostgreSQL-based time-series database)

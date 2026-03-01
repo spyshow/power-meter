@@ -1,10 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PeakService } from './peak.service';
 import { DRIZZLE_PROVIDER } from '../database/database.module';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 describe('PeakService', () => {
   let service: PeakService;
   let mockDb: any;
+  let mockEventEmitter: any;
 
   beforeEach(async () => {
     mockDb = {
@@ -14,12 +16,20 @@ describe('PeakService', () => {
       from: jest.fn().mockReturnThis(),
     };
 
+    mockEventEmitter = {
+      emit: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PeakService,
         {
           provide: DRIZZLE_PROVIDER,
           useValue: mockDb,
+        },
+        {
+          provide: EventEmitter2,
+          useValue: mockEventEmitter,
         },
       ],
     }).compile();

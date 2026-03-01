@@ -2,11 +2,15 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { LoggingService } from './logging.service';
 import { ModbusService } from '../modbus/modbus.service';
 import { TelemetryRepository } from '../database/telemetry.repository';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { PeakService } from '../peaks/peak.service';
 
 describe('LoggingService', () => {
   let service: LoggingService;
   let mockModbusService: any;
   let mockTelemetryRepo: any;
+  let mockEventEmitter: any;
+  let mockPeakService: any;
 
   beforeEach(async () => {
     mockModbusService = {
@@ -15,6 +19,12 @@ describe('LoggingService', () => {
     };
     mockTelemetryRepo = {
       create: jest.fn(),
+    };
+    mockEventEmitter = {
+      emit: jest.fn(),
+    };
+    mockPeakService = {
+      checkPeak: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -27,6 +37,14 @@ describe('LoggingService', () => {
         {
           provide: TelemetryRepository,
           useValue: mockTelemetryRepo,
+        },
+        {
+          provide: EventEmitter2,
+          useValue: mockEventEmitter,
+        },
+        {
+          provide: PeakService,
+          useValue: mockPeakService,
         },
       ],
     }).compile();

@@ -19,14 +19,14 @@ Define the database schema and implement the telemetry logging service.
 - [x] Task: Implement Telemetry Repository to save and query 1-second data [498655c]
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Data Layer Implementation' (Protocol in workflow.md) [a2f627f]
 
-## Phase 3: Core Service Migration (Modbus & Logging)
+## Phase 3: Core Service Migration (Modbus & Logging) [checkpoint: bcaff8c]
 Port the industrial communication and logging logic to NestJS services.
 
 - [x] Task: Write failing tests for `ModbusService` (NestJS port of `modbus-serial` logic) [affcf16]
 - [x] Task: Implement `ModbusService` in NestJS [affcf16]
 - [x] Task: Write failing tests for `LoggingService` (orchestrates Modbus reading and DB saving) [43556ac]
 - [x] Task: Implement `LoggingService` in NestJS [43556ac]
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Core Service Migration' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Core Service Migration' (Protocol in workflow.md) [bcaff8c]
 
 ## Phase 4: Feature Migration (Peaks & API)
 Port the peak detection logic and API endpoints to NestJS controllers.

@@ -37,10 +37,10 @@ Port the peak detection logic and API endpoints to NestJS controllers.
 - [x] Task: Port SSE (Server-Sent Events) or WebSocket logic for real-time updates [9a0a202]
 - [x] Task: Conductor - User Manual Verification 'Phase 4: Feature Migration' (Protocol in workflow.md) [32e9668]
 
-## Phase 5: Integration & Verification
+## Phase 5: Integration & Verification [checkpoint: 06fb416]
 Connect the frontend to the new API and perform full system validation.
 
 - [x] Task: Update Frontend environment variables to point to the new NestJS API [0e76c6c]
 - [x] Task: Verify real-time dashboard updates with the new backend [32e9668]
 - [x] Task: Verify historical trend charts with TimescaleDB data [a91dc02]
-- [ ] Task: Conductor - User Manual Verification 'Phase 5: Integration & Verification' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 5: Integration & Verification' (Protocol in workflow.md) [06fb416]

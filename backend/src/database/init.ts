@@ -66,6 +66,19 @@ export class DatabaseInitService implements OnModuleInit {
         );
       `);
 
+      // Seed default admin if no users exist
+      const userCount = await this.db.execute(sql`SELECT COUNT(*) FROM users;`);
+      if (parseInt(userCount[0].count, 10) === 0) {
+        console.log('[DatabaseInit] Seeding default admin user...');
+        // username: admin, password: admin123
+        const hashedAdminPassword = '$2b$10$MbriuN.XyYYFbmf4W.VrKuUKS7FjaGe6sfRJTPZHo.v/3ntL.hKtW';
+        await this.db.execute(sql`
+          INSERT INTO users (username, password, role) 
+          VALUES ('admin', ${hashedAdminPassword}, 'admin');
+        `);
+        console.log('[DatabaseInit] Default admin user seeded.');
+      }
+
       console.log('[DatabaseInit] Database initialization complete.');
     } catch (error) {
       console.error('[DatabaseInit] Error during database initialization:', error);

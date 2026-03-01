@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
+import { DatabaseInitService } from './init';
 
 export const DRIZZLE_PROVIDER = 'DRIZZLE_PROVIDER';
 
@@ -21,6 +22,7 @@ export const DRIZZLE_PROVIDER = 'DRIZZLE_PROVIDER';
         return drizzle(client, { schema });
       },
     },
+    DatabaseInitService,
   ],
   exports: [DRIZZLE_PROVIDER],
 })

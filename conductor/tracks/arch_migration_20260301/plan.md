@@ -28,14 +28,14 @@ Port the industrial communication and logging logic to NestJS services.
 - [x] Task: Implement `LoggingService` in NestJS [43556ac]
 - [x] Task: Conductor - User Manual Verification 'Phase 3: Core Service Migration' (Protocol in workflow.md) [bcaff8c]
 
-## Phase 4: Feature Migration (Peaks & API)
+## Phase 4: Feature Migration (Peaks & API) [checkpoint: 32e9668]
 Port the peak detection logic and API endpoints to NestJS controllers.
 
 - [x] Task: Write failing tests for `PeakService` (NestJS port) [6be5b8f]
 - [x] Task: Implement `PeakService` and integration with TimescaleDB [6be5b8f]
 - [x] Task: Port Telemetry and Peaks API controllers to NestJS [a91dc02]
 - [x] Task: Port SSE (Server-Sent Events) or WebSocket logic for real-time updates [9a0a202]
-- [ ] Task: Conductor - User Manual Verification 'Phase 4: Feature Migration' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 4: Feature Migration' (Protocol in workflow.md) [32e9668]
 
 ## Phase 5: Integration & Verification
 Connect the frontend to the new API and perform full system validation.

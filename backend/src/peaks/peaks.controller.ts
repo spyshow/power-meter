@@ -1,5 +1,5 @@
 import { Controller, Get, Inject } from '@nestjs/common';
-import { DRIZZLE_PROVIDER } from '../database/database.module';
+import { DRIZZLE_PROVIDER } from '../database/constants';
 import { peaks } from '../database/schema';
 
 @Controller('api/peaks')

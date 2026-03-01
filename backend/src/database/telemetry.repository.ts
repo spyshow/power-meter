@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { DRIZZLE_PROVIDER } from './database.module';
+import { DRIZZLE_PROVIDER } from './constants';
 import { telemetry } from './schema';
 import { eq, desc } from 'drizzle-orm';
 

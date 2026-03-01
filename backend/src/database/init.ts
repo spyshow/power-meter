@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { DRIZZLE_PROVIDER } from './database.module';
+import { DRIZZLE_PROVIDER } from './constants';
 import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
 
 @Injectable()

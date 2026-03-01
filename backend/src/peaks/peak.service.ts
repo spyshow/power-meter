@@ -1,5 +1,5 @@
 import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
-import { DRIZZLE_PROVIDER } from '../database/database.module';
+import { DRIZZLE_PROVIDER } from '../database/constants';
 import { peaks } from '../database/schema';
 import { sql } from 'drizzle-orm';
 import { EventEmitter2 } from '@nestjs/event-emitter';

@@ -4,8 +4,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
 import { DatabaseInitService } from './init';
-
-export const DRIZZLE_PROVIDER = 'DRIZZLE_PROVIDER';
+import { DRIZZLE_PROVIDER } from './constants';
 
 @Global()
 @Module({

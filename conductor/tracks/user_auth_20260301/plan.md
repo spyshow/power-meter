@@ -37,7 +37,7 @@ Protect endpoints and implement role checks.
     - [x] Apply `RolesGuard` to data fetching routes (Viewer role minimum)
 - [x] Task: Conductor - User Manual Verification 'Phase 3: Authorization' (Protocol in workflow.md) [d0662d8]
 
-## Phase 4: Admin Management & UI Integration
+## Phase 4: Admin Management & UI Integration [checkpoint: 5c718c2]
 Build the admin dashboard and integrate with Refine frontend.
 
 - [x] Task: Implement User Management Endpoints (Admin Only) [2f66c9c]
@@ -49,4 +49,4 @@ Build the admin dashboard and integrate with Refine frontend.
 - [x] Task: Frontend Integration - Admin Dashboard [83e2dd6]
     - [x] Create User Management resource in Refine (Admin only)
     - [x] Implement role-based navigation visibility
-- [ ] Task: Conductor - User Manual Verification 'Phase 4: Admin & UI' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 4: Admin & UI' (Protocol in workflow.md) [5c718c2]

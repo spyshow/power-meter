@@ -13,21 +13,21 @@ A centralized web-based dashboard for monitoring and analyzing power consumption
 
 ## Core Value Proposition
 - **Real-time Monitoring:** Instant access to critical electrical parameters from multiple devices with 1-second precision.
-- **Historical Analysis:** Long-term data logging in InfluxDB enables high-performance trend analysis and pattern recognition.
+- **Historical Analysis:** Long-term data logging in TimescaleDB enables high-performance trend analysis and pattern recognition.
 - **Simple Integration:** Seamless connectivity with Schneider PM5310 meters via Modbus TCP (PAS600 gateway).
 
 ## Key Features
 - **Device Dashboard:** Real-time display of Voltage, Current, and Power for 6 specific PM5310 devices.
-- **Data Logging:** Continuous recording of sensor data to a local InfluxDB instance at 1-second intervals.
+- **Data Logging:** Continuous recording of sensor data to a local TimescaleDB instance at 1-second intervals.
 - **Telemetry Trends:** Interactive, live-updating charts to visualize historical data with dynamic aggregation for performance.
 - **Peak Value Monitoring:** Dedicated analysis page tracking all-time maximum values for every device and metric with real-time updates.
 - **Theme Support:** Fully responsive UI with integrated Dark Mode support.
-- **Containerized Deployment:** Entire stack (Frontend, Backend, InfluxDB) is containerized for consistent deployment across environments.
+- **Containerized Deployment:** Entire stack (Frontend, Backend, TimescaleDB) is containerized for consistent deployment across environments.
 - **Automated CI/CD Pipeline:** Automated testing, building, and deployment via GitHub Actions, Docker Hub, and Watchtower.
 
 ## Technical Context
 - **Protocol:** Modbus TCP (via PAS600 Gateway at 172.16.0.80).
-- **Database:** InfluxDB for time-series sensor data.
+- **Database:** TimescaleDB for time-series sensor data.
 - **Platform:** Web Application accessible via standard browsers.
 - **Devices:**
     - Device 1000 (ID 10)

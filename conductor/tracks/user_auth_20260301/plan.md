@@ -22,7 +22,7 @@ Implement the core login and JWT issuance logic.
 - [x] Task: Implement Auth Service and JWT Strategy [b0ac843]
     - [ ] Write failing tests for credential validation and JWT generation
     - [ ] Implement `AuthService.login` and NestJS `JwtStrategy`
-- [ ] Task: Create Login Endpoint
+- [x] Task: Create Login Endpoint [ff5cde3]
     - [ ] Write failing tests for `POST /auth/login`
     - [ ] Implement `AuthController`
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Authentication Core' (Protocol in workflow.md)

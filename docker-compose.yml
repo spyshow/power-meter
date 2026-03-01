@@ -1,22 +1,19 @@
 services:
-  influxdb:
-    image: influxdb:2.7
-    container_name: power-meter-influxdb
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: power-meter-timescaledb
     ports:
-      - '8086:8086'
+      - '5432:5432'
     environment:
-      - DOCKER_INFLUXDB_INIT_MODE=setup
-      - DOCKER_INFLUXDB_INIT_USERNAME=${DOCKER_INFLUXDB_INIT_USERNAME:-admin}
-      - DOCKER_INFLUXDB_INIT_PASSWORD=${DOCKER_INFLUXDB_INIT_PASSWORD:-password123}
-      - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_ORG:-my-org}
-      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_BUCKET:-modbus_data}
-      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_TOKEN:-my-super-secret-auth-token}
+      - POSTGRES_DB=${DATABASE_NAME:-power_meter}
+      - POSTGRES_USER=${DATABASE_USER:-admin}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD:-password123}
     volumes:
-      - influxdb-data:/var/lib/influxdb2
+      - timescaledb-data:/var/lib/postgresql/data
     networks:
       - power-meter-network
     healthcheck:
-      test: ['CMD', 'influx', 'ping']
+      test: ['CMD-SHELL', 'pg_isready -U ${DATABASE_USER:-admin} -d ${DATABASE_NAME:-power_meter}']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -28,14 +25,11 @@ services:
     ports:
       - '3001:3001'
     environment:
-      - INFLUXDB_URL=http://influxdb:8086
-      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN:-my-super-secret-auth-token}
-      - INFLUXDB_ORG=${INFLUXDB_ORG:-my-org}
-      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET:-modbus_data}
+      - DATABASE_URL=postgres://${DATABASE_USER:-admin}:${DATABASE_PASSWORD:-password123}@timescaledb:5432/${DATABASE_NAME:-power_meter}
       - PAS600_IP=${PAS600_IP:-172.16.0.80}
       - PAS600_PORT=${PAS600_PORT:-502}
     depends_on:
-      influxdb:
+      timescaledb:
         condition: service_healthy
     networks:
       - power-meter-network
@@ -67,4 +61,4 @@ networks:
     driver: bridge
 
 volumes:
-  influxdb-data:
+  timescaledb-data:

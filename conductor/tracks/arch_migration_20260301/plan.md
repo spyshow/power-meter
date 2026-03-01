@@ -7,7 +7,7 @@ Setup the new TimescaleDB container and scaffold the NestJS backend.
 
 - [x] Task: Update `docker-compose.yml` to include TimescaleDB (PostgreSQL) and remove InfluxDB [03f2d16]
 - [x] Task: Scaffold a new NestJS backend in a `backend/` directory (or refactor existing structure) [43fd586]
-- [ ] Task: Configure Drizzle ORM and PostgreSQL connection in NestJS
+- [x] Task: Configure Drizzle ORM and PostgreSQL connection in NestJS [2696c87]
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Infrastructure Setup' (Protocol in workflow.md)
 
 ## Phase 2: Data Layer Implementation

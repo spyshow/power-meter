@@ -5,15 +5,15 @@ services:
     ports:
       - '5432:5432'
     environment:
-      - POSTGRES_DB=${DATABASE_NAME:-power_meter}
-      - POSTGRES_USER=${DATABASE_USER:-admin}
-      - POSTGRES_PASSWORD=${DATABASE_PASSWORD:-password123}
+      - POSTGRES_DB=${POSTGRES_DB:-power_meter}
+      - POSTGRES_USER=${POSTGRES_USER:-admin}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password123}
     volumes:
       - timescaledb-data:/var/lib/postgresql/data
     networks:
       - power-meter-network
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${DATABASE_USER:-admin} -d ${DATABASE_NAME:-power_meter}']
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-admin} -d ${POSTGRES_DB:-power_meter}']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,7 +25,7 @@ services:
     ports:
       - '3001:3001'
     environment:
-      - DATABASE_URL=postgres://${DATABASE_USER:-admin}:${DATABASE_PASSWORD:-password123}@timescaledb:5432/${DATABASE_NAME:-power_meter}
+      - DATABASE_URL=${DATABASE_URL:-postgres://admin:password123@timescaledb:5432/power_meter}
       - PAS600_IP=${PAS600_IP:-172.16.0.80}
       - PAS600_PORT=${PAS600_PORT:-502}
     depends_on:

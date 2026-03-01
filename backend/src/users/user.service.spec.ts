@@ -15,6 +15,10 @@ describe('UserService', () => {
       from: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
       limit: jest.fn().mockReturnThis(),
+      update: jest.fn().mockReturnThis(),
+      set: jest.fn().mockReturnThis(),
+      delete: jest.fn().mockReturnThis(),
+      returning: jest.fn().mockReturnThis(),
     };
 
     const module: TestingModule = await Test.createTestingModule({

@@ -2,12 +2,16 @@ import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
 import { DRIZZLE_PROVIDER } from '../database/database.module';
 import { peaks } from '../database/schema';
 import { sql } from 'drizzle-orm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class PeakService implements OnModuleInit {
   private currentMax: Record<string, number> = {};
 
-  constructor(@Inject(DRIZZLE_PROVIDER) private db: any) {}
+  constructor(
+    @Inject(DRIZZLE_PROVIDER) private db: any,
+    private eventEmitter: EventEmitter2,
+  ) {}
 
   async onModuleInit() {
     await this.initialize();
@@ -49,7 +53,14 @@ export class PeakService implements OnModuleInit {
           timestamp: new Date(),
         });
 
-        // TODO: Emit peak detection event via SSE/WebSocket (Phase 4)
+        // Emit peak detection event for real-time UI
+        this.eventEmitter.emit('peak.detected', {
+          deviceId,
+          metric,
+          value,
+          previousValue,
+        });
+        
         console.log(`[PeakService] New Peak for Device ${deviceId} (${metric}): ${value} (was ${previousValue})`);
       } catch (error) {
         console.error('[PeakService] Failed to save peak:', error);

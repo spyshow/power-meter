@@ -1,6 +1,8 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ModbusService } from '../modbus/modbus.service';
 import { TelemetryRepository } from '../database/telemetry.repository';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { PeakService } from '../peaks/peak.service';
 
 @Injectable()
 export class LoggingService implements OnModuleInit {
@@ -14,6 +16,8 @@ export class LoggingService implements OnModuleInit {
   constructor(
     private modbusService: ModbusService,
     private telemetryRepo: TelemetryRepository,
+    private eventEmitter: EventEmitter2,
+    private peakService: PeakService,
   ) {}
 
   async onModuleInit() {
@@ -50,10 +54,29 @@ export class LoggingService implements OnModuleInit {
         kva,
       });
 
-      // TODO: Emit events and check peaks (Phase 4)
+      // Check peaks
+      await this.peakService.checkPeak(id, 'voltage', voltage);
+      await this.peakService.checkPeak(id, 'current', current);
+      await this.peakService.checkPeak(id, 'kva', kva);
+
+      // Emit event for real-time UI
+      this.eventEmitter.emit('device.update', {
+        id,
+        voltage,
+        current,
+        kva,
+        status: 'online',
+      });
     } catch (error) {
       // Log error but don't crash
       console.error(`[LoggingService] Failed to poll device ${id}:`, error.message);
+      
+      // Emit offline status
+      this.eventEmitter.emit('device.update', {
+        id,
+        status: 'offline',
+      });
+      
       throw error;
     }
   }

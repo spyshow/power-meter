@@ -10,14 +10,14 @@ Setup the new TimescaleDB container and scaffold the NestJS backend.
 - [x] Task: Configure Drizzle ORM and PostgreSQL connection in NestJS [2696c87]
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Infrastructure Setup' (Protocol in workflow.md) [404d16d]
 
-## Phase 2: Data Layer Implementation
+## Phase 2: Data Layer Implementation [checkpoint: a2f627f]
 Define the database schema and implement the telemetry logging service.
 
 - [x] Task: Define Drizzle schema for Telemetry (Voltage, Amps, kVA) and Peaks [d0bbc6e]
 - [x] Task: Implement TimescaleDB Hypertable initialization script/migration [feea84f]
 - [x] Task: Write failing tests for Telemetry Repository (Drizzle) [498655c]
 - [x] Task: Implement Telemetry Repository to save and query 1-second data [498655c]
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Data Layer Implementation' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Data Layer Implementation' (Protocol in workflow.md) [a2f627f]
 
 ## Phase 3: Core Service Migration (Modbus & Logging)
 Port the industrial communication and logging logic to NestJS services.

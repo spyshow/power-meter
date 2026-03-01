@@ -5,7 +5,7 @@ This plan covers the transition to NestJS, integration with TimeScaleDB, and the
 ## Phase 1: Infrastructure Setup (NestJS & TimeScaleDB)
 Transition the backend to NestJS and configure the TimeScaleDB connection.
 
-- [ ] Task: Scaffold NestJS backend in a new directory or replace existing Express logic
+- [x] Task: Scaffold NestJS backend in a new directory or replace existing Express logic [5b35c0c]
     - [ ] Initialize NestJS project
     - [ ] Configure environment variables for TimeScaleDB
 - [ ] Task: Implement TimeScaleDB connection and User Schema

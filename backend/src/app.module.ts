@@ -11,6 +11,8 @@ import { PeakService } from './peaks/peak.service';
 import { PeaksController } from './peaks/peaks.controller';
 import { EventsModule } from './events/events.module';
 import { EventsController } from './events/events.controller';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { EventsController } from './events/events.controller';
     }),
     DatabaseModule,
     EventsModule,
+    AuthModule,
+    UsersModule,
   ],
   controllers: [
     AppController,

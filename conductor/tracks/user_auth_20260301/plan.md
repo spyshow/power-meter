@@ -2,16 +2,16 @@
 
 This plan covers the transition to NestJS, integration with TimeScaleDB, and the implementation of role-based access control.
 
-## Phase 1: Infrastructure Setup (NestJS & TimeScaleDB)
+## Phase 1: Infrastructure Setup (NestJS & TimeScaleDB) [checkpoint: 475f62c]
 Transition the backend to NestJS and configure the TimeScaleDB connection.
 
 - [x] Task: Scaffold NestJS backend in a new directory or replace existing Express logic [5b35c0c]
-    - [ ] Initialize NestJS project
-    - [ ] Configure environment variables for TimeScaleDB
+    - [x] Initialize NestJS project
+    - [x] Configure environment variables for TimeScaleDB
 - [x] Task: Implement TimeScaleDB connection and User Schema [98c2591]
-    - [ ] Create `Users` table migration in TimeScaleDB
-    - [ ] Implement TypeORM or Drizzle (or raw SQL) entity for Users
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Infrastructure' (Protocol in workflow.md)
+    - [x] Create `Users` table migration in TimeScaleDB
+    - [x] Implement TypeORM or Drizzle (or raw SQL) entity for Users
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Infrastructure' (Protocol in workflow.md) [475f62c]
 
 ## Phase 2: Authentication Core (TDD)
 Implement the core login and JWT issuance logic.

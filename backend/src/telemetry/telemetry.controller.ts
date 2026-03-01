@@ -26,9 +26,29 @@ export class TelemetryController {
     if (!deviceId) {
       throw new BadRequestException('deviceId is required');
     }
-    
+
     const id = parseInt(deviceId, 10);
-    // Note: Range logic will be implemented in the repository/service
-    return await this.telemetryRepo.getHistory(id, new Date(), new Date());
+    const now = new Date();
+    let startTime = new Date(now.getTime() - 60 * 60 * 1000); // Default 1h
+
+    if (range) {
+      const match = range.match(/^(\d+)([mhd])$/);
+      if (match) {
+        const value = parseInt(match[1], 10);
+        const unit = match[2];
+        const msMap = { m: 60 * 1000, h: 60 * 60 * 1000, d: 24 * 60 * 60 * 1000 };
+        startTime = new Date(now.getTime() - value * msMap[unit]);
+      }
+    }
+
+    const data = await this.telemetryRepo.getHistory(id, startTime);
+    
+    // Map to frontend format (_time instead of timestamp)
+    return data.map(row => ({
+      _time: row.timestamp,
+      voltage: row.voltage,
+      current: row.current,
+      kva: row.kva,
+    }));
   }
 }

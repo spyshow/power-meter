@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { DRIZZLE_PROVIDER } from './constants';
 import { telemetry } from './schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, asc, gte, and } from 'drizzle-orm';
 
 @Injectable()
 export class TelemetryRepository {
@@ -27,12 +27,16 @@ export class TelemetryRepository {
     return results[0];
   }
 
-  async getHistory(deviceId: number, startTime: Date, endTime: Date) {
-    // Basic implementation for now, can be expanded with more complex filters
+  async getHistory(deviceId: number, startTime: Date) {
     return await this.db
       .select()
       .from(telemetry)
-      .where(eq(telemetry.deviceId, deviceId))
-      .orderBy(desc(telemetry.timestamp));
+      .where(
+        and(
+          eq(telemetry.deviceId, deviceId),
+          gte(telemetry.timestamp, startTime)
+        )
+      )
+      .orderBy(asc(telemetry.timestamp));
   }
 }

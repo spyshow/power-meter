@@ -33,7 +33,7 @@ Protect endpoints and implement role checks.
 - [x] Task: Implement Role Guards and Decorators [871e2f2]
     - [ ] Create `@Roles()` decorator and `RolesGuard`
     - [ ] Write tests for unauthorized/authorized access based on roles
-- [ ] Task: Protect Existing Telemetry Endpoints
+- [x] Task: Protect Existing Telemetry Endpoints [912ceac]
     - [ ] Apply `RolesGuard` to data fetching routes (Viewer role minimum)
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: Authorization' (Protocol in workflow.md)
 

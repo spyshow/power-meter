@@ -11,3 +11,8 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 - [ ] **Track: User Authentication and Authorization**
 *Link: [./tracks/user_auth_20260301/](./tracks/user_auth_20260301/)*
+
+---
+
+- [ ] **Track: Architectural Migration (InfluxDB -> TimescaleDB, Express -> NestJS)**
+*Link: [./tracks/arch_migration_20260301/](./tracks/arch_migration_20260301/)*

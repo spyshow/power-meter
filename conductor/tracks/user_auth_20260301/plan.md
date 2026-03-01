@@ -41,8 +41,8 @@ Protect endpoints and implement role checks.
 Build the admin dashboard and integrate with Refine frontend.
 
 - [x] Task: Implement User Management Endpoints (Admin Only) [2f66c9c]
-    - [ ] Write tests for User CRUD (Create, Read, Update, Delete)
-    - [ ] Implement `UserController` with `@Roles(Role.Admin)`
+    - [x] Write tests for User CRUD (Create, Read, Update, Delete) [62a6efb]
+    - [x] Implement `UserController` with `@Roles(Role.Admin)` [2f66c9c]
 - [x] Task: Frontend Integration - Login Page [83e2dd6]
     - [x] Create Login page in Refine using Ant Design
     - [x] Implement `authProvider` in Refine to handle JWT

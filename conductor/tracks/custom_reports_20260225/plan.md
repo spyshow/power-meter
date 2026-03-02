@@ -15,8 +15,8 @@ Enhance initial services to meet the updated specification.
 - [x] Task: Enhance PDF Engine with Charts and Summaries [3c9e5f2]
     - [x] Create HTML/CSS templates for the summary and charts
     - [x] Implement data injection into Puppeteer templates
-- [ ] Task: Create `/api/reports/preview` and `/api/reports/download` endpoints
-    - [ ] Implement controllers for preview (JSON) and download (Stream)
+- [x] Task: Create `/api/reports/preview` and `/api/reports/download` endpoints [8f14d13]
+    - [x] Implement controllers for preview (JSON) and download (Stream)
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Generation Engines' (Protocol in workflow.md)
 
 ## Phase 3: Frontend Reports Page & Configuration

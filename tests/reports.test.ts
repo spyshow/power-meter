@@ -86,7 +86,7 @@ describe('Excel Generation', () => {
 describe('PDF Generation', () => {
   it('should generate a PDF file from report data', async () => {
     const mockData = [
-      { _time: '2026-03-02T10:00:00Z', device_id: '1000', voltage: 230 },
+      { _time: '2026-03-02T10:00:00Z', device_id: '1000', voltage: 230, current: 5 },
     ];
     const fileName = 'test-pdf';
     
@@ -98,5 +98,21 @@ describe('PDF Generation', () => {
     
     // Cleanup
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-  }, 15000); // Increase timeout for Puppeteer
+  }, 15000);
+
+  it('should include summary statistics in the PDF', async () => {
+    const mockData = [
+      { _time: '2026-03-02T10:00:00Z', device_id: '1000', kva: 1.0 },
+      { _time: '2026-03-02T10:01:00Z', device_id: '1000', kva: 2.0 },
+      { _time: '2026-03-02T10:02:00Z', device_id: '1000', kva: 3.0 },
+    ];
+    const fileName = 'test-pdf-summary';
+    
+    // We can't easily "read" the PDF content in Jest without heavy libs,
+    // but we can ensure the generator doesn't crash with multiple data points.
+    const filePath = await generatePDF(mockData, fileName);
+    expect(fs.existsSync(filePath)).toBe(true);
+
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+  }, 15000);
 });

@@ -5,16 +5,26 @@ import puppeteer from 'puppeteer';
 
 export const generateExcel = async (data: any[], fileName: string): Promise<string> => {
   const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet('Report Data');
 
   if (data.length > 0) {
-    const columns = Object.keys(data[0]).map(key => ({
-      header: key,
-      key: key,
-      width: 20
-    }));
-    worksheet.columns = columns;
-    worksheet.addRows(data);
+    // Group data by device_id
+    const devices = [...new Set(data.map(item => item.device_id || 'Unknown'))];
+
+    for (const deviceId of devices) {
+      const deviceData = data.filter(item => (item.device_id || 'Unknown') === deviceId);
+      const sheetName = `Device ${deviceId}`.substring(0, 31); // Excel sheet name limit
+      const worksheet = workbook.addWorksheet(sheetName);
+
+      const columns = Object.keys(deviceData[0]).map(key => ({
+        header: key,
+        key: key,
+        width: 20
+      }));
+      worksheet.columns = columns;
+      worksheet.addRows(deviceData);
+    }
+  } else {
+    workbook.addWorksheet('Empty Report');
   }
 
   const reportsDir = path.join(process.cwd(), 'reports');

@@ -1,4 +1,8 @@
 import { queryReportData } from '../src/influx';
+import { generateExcel, generatePDF } from '../src/reports';
+import ExcelJS from 'exceljs';
+import fs from 'fs';
+import path from 'path';
 
 // Mock the InfluxDB client and WriteApi
 jest.mock('@influxdata/influxdb-client', () => {
@@ -50,4 +54,49 @@ describe('Report Data Logic', () => {
     const data = await queryReportData(params);
     expect(Array.isArray(data)).toBe(true);
   });
+});
+
+describe('Excel Generation', () => {
+  const reportsDir = path.join(process.cwd(), 'reports');
+
+  it('should generate a multi-sheet Excel file for multiple devices', async () => {
+    const mockData = [
+      { _time: '2026-03-02T10:00:00Z', device_id: '1000', voltage: 230 },
+      { _time: '2026-03-02T10:01:00Z', device_id: '1000', voltage: 231 },
+      { _time: '2026-03-02T10:00:00Z', device_id: '2000', voltage: 228 },
+    ];
+    const fileName = 'test-multi-sheet';
+    
+    const filePath = await generateExcel(mockData, fileName);
+    expect(fs.existsSync(filePath)).toBe(true);
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.readFile(filePath);
+    
+    const sheetNames = workbook.worksheets.map(ws => ws.name);
+    expect(sheetNames).toContain('Device 1000');
+    expect(sheetNames).toContain('Device 2000');
+    expect(sheetNames).not.toContain('Report Data'); // Should replace the default sheet
+    
+    // Cleanup
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+  });
+});
+
+describe('PDF Generation', () => {
+  it('should generate a PDF file from report data', async () => {
+    const mockData = [
+      { _time: '2026-03-02T10:00:00Z', device_id: '1000', voltage: 230 },
+    ];
+    const fileName = 'test-pdf';
+    
+    const filePath = await generatePDF(mockData, fileName);
+    expect(fs.existsSync(filePath)).toBe(true);
+    
+    const stats = fs.statSync(filePath);
+    expect(stats.size).toBeGreaterThan(0);
+    
+    // Cleanup
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+  }, 15000); // Increase timeout for Puppeteer
 });

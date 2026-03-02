@@ -13,6 +13,7 @@ import { EventsModule } from './events/events.module';
 import { EventsController } from './events/events.controller';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { UsersModule } from './users/users.module';
     EventsModule,
     AuthModule,
     UsersModule,
+    ReportsModule,
   ],
   controllers: [
     AppController,

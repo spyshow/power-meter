@@ -9,9 +9,9 @@
 
 ## Phase 2: Refined Generation Engines (XLSX/PDF)
 Enhance initial services to meet the updated specification.
-- [ ] Task: Update XLSX Engine for Multi-Sheet Structure
-    - [ ] Write tests for device-per-sheet logic
-    - [ ] Implement multi-sheet generation in `src/reports.ts`
+- [x] Task: Update XLSX Engine for Multi-Sheet Structure [495d2f1]
+    - [x] Write tests for device-per-sheet logic
+    - [x] Implement multi-sheet generation in `src/reports.ts`
 - [ ] Task: Enhance PDF Engine with Charts and Summaries
     - [ ] Create HTML/CSS templates for the summary and charts
     - [ ] Implement data injection into Puppeteer templates

@@ -44,7 +44,7 @@ describe('useRealTimeData', () => {
     
     act(() => {
       mockEventSourceInstance.onmessage!({
-        data: JSON.stringify({ id: 10, voltage: 230, current: 5, kva: 1.15 }),
+        data: JSON.stringify({ type: 'update', id: 10, voltage: 230, current: 5, kva: 1.15 }),
       } as MessageEvent);
     });
 
@@ -57,7 +57,7 @@ describe('useRealTimeData', () => {
     
     act(() => {
       mockEventSourceInstance.onmessage!({
-        data: JSON.stringify({ id: 10, voltage: 230, current: 5, kva: 1.15 }),
+        data: JSON.stringify({ type: 'update', id: 10, voltage: 230, current: 5, kva: 1.15 }),
       } as MessageEvent);
     });
 

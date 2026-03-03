@@ -19,12 +19,12 @@ Enhance initial services to meet the updated specification.
     - [x] Implement controllers for preview (JSON) and download (Stream)
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Generation Engines' (Protocol in workflow.md) [4330b38]
 
-## Phase 3: Frontend Reports Page & Configuration
+## Phase 3: Frontend Reports Page & Configuration [checkpoint: ba9d379]
 - [x] Task: Create Reports Configuration UI [20543f2]
     - [x] Implement Multi-select for Devices/Metrics and RangePicker for time
 - [x] Task: Implement Preview and Download functionality [20543f2]
     - [x] Connect UI to preview/download API endpoints
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Frontend UI' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Frontend UI' (Protocol in workflow.md) [ba9d379]
 
 ## Phase 4: Subscription & Scheduling System
 - [ ] Task: Implement Subscription Storage (SQLite/JSON)

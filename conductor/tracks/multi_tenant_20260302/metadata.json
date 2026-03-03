@@ -1,0 +1,8 @@
+{
+  "track_id": "multi_tenant_20260302",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-03-02T13:00:00Z",
+  "updated_at": "2026-03-02T13:00:00Z",
+  "description": "i want to make a this app expandable for other people , so the admin can create project admin user ( new role) that can add multiable modbus gateways and add power meter connected to each one , also he can create users for his project, generate his own reports and schedule his own reports , and these users and project admin user can't check or login to another project."
+}

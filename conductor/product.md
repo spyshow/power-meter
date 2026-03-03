@@ -24,6 +24,8 @@ A centralized web-based dashboard for monitoring and analyzing power consumption
 - **Theme Support:** Fully responsive UI with integrated Dark Mode support.
 - **Secure Authentication:** JWT-based login system to protect sensitive data and configuration.
 - **Role-Based Access Control:** Fine-grained permissions for Admin (Full access), Operator (Data & Reports), and Viewer (Read-only) roles.
+- **Custom Report Generation:** On-demand generation of detailed performance reports in PDF and Excel (XLSX) formats with embedded trend charts and summary statistics.
+- **Automated Report Scheduling:** Subscription-based system allowing users to schedule recurring reports (e.g., daily, weekly) with automated background generation and server-side persistence.
 - **Containerized Deployment:** Entire stack (Frontend, Backend, TimescaleDB) is containerized for consistent deployment across environments.
 - **Automated CI/CD Pipeline:** Automated testing, building, and deployment via GitHub Actions, Docker Hub, and Watchtower.
 

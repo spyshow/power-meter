@@ -12,11 +12,14 @@
 - **Language:** TypeScript
 - **Authentication:** JWT (JSON Web Tokens) with Passport.js
 - **Security:** BCrypt for password hashing
+- **Task Scheduling:** @nestjs/schedule (Cron-based)
+- **PDF Engine:** Puppeteer (Headless Chrome)
+- **Excel Engine:** ExcelJS
 
 ## Database
 - **Primary:** TimescaleDB (PostgreSQL-based time-series database)
 - **ORM:** Drizzle ORM (Type-safe data access)
-- **Secondary:** SQLite (Optional, for configuration/user data if needed)
+- **Secondary:** None (Config/User data consolidated into TimescaleDB)
 
 ## Industrial Communication
 - **Protocol:** Modbus TCP

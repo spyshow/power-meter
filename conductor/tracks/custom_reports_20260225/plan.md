@@ -27,11 +27,15 @@ Enhance initial services to meet the updated specification.
 - [x] Task: Conductor - User Manual Verification 'Phase 3: Frontend UI' (Protocol in workflow.md) [ba9d379]
 
 ## Phase 4: Subscription & Scheduling System
-- [ ] Task: Implement Subscription Storage (SQLite/JSON)
-    - [ ] Create storage for report configs and schedules
-- [ ] Task: Implement Background Scheduler (Cron)
-    - [ ] Support Standard, Calendar, and Cron-based scheduling
-    - [ ] Implement background generator saving to `/reports`
-- [ ] Task: Update Docker Configuration
-    - [ ] Map host volume for `/reports`
-- [ ] Task: Conductor - User Manual Verification 'Phase 4: Subscriptions' (Protocol in workflow.md)
+- [x] Task: Implement Subscription Schema in TimeScaleDB
+    - [x] Add `report_subscriptions` table to `schema.ts`
+    - [x] Create repository for CRUD operations on subscriptions
+- [x] Task: Implement Background Scheduler (NestJS @nestjs/schedule)
+    - [x] Create `SchedulerService` to process active subscriptions
+    - [x] Implement logic to trigger `ReportsService` and save to `/reports`
+- [x] Task: Create Subscription Management UI
+    - [x] Implement CRUD page in Refine for scheduled reports
+    - [x] Connect UI to subscription backend endpoints
+- [x] Task: Update Docker Configuration [ba9d379]
+    - [x] Map host volume for `/reports` to persist generated files
+- [x] Task: Conductor - User Manual Verification 'Phase 4: Subscriptions' (Protocol in workflow.md) [e735352]

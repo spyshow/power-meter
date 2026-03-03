@@ -4,7 +4,7 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-- [~] **Track: Custom Report Generation**
+- [x] **Track: Custom Report Generation**
 *Link: [./tracks/custom_reports_20260225/](./tracks/custom_reports_20260225/)*
 
 ---

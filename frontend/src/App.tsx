@@ -11,9 +11,10 @@ import { ConfigProvider, theme, Switch, Space, Typography } from 'antd';
 import routerBindings, { UnsavedChangesNotifier, CatchAllNavigate, NavigateToResource } from '@refinedev/react-router-v6';
 import dataProvider from '@refinedev/simple-rest';
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
-import { DashboardOutlined, GlobalOutlined, BulbOutlined, BulbFilled, RiseOutlined, UserOutlined } from '@ant-design/icons';
+import { DashboardOutlined, GlobalOutlined, BulbOutlined, BulbFilled, RiseOutlined, UserOutlined, FileTextOutlined } from '@ant-design/icons';
 import { Dashboard } from './pages/Dashboard';
 import { PeakAnalysis } from './pages/PeakAnalysis';
+import { Reports } from './pages/Reports';
 import { LoginPage } from './pages/Login';
 import { UserList, UserCreate, UserEdit } from './pages/Users';
 import { authProvider } from './authProvider';
@@ -72,6 +73,14 @@ const App = () => {
               meta: {
                 label: 'Peak Analysis',
                 icon: <RiseOutlined />,
+              }
+            },
+            {
+              name: 'reports',
+              list: '/reports',
+              meta: {
+                label: 'Reports',
+                icon: <FileTextOutlined />,
               }
             },
             {
@@ -140,6 +149,7 @@ const App = () => {
             >
               <Route index element={<Dashboard />} />
               <Route path="/peaks" element={<PeakAnalysis />} />
+              <Route path="/reports" element={<Reports />} />
               <Route path="/users">
                 <Route index element={<UserList />} />
                 <Route path="create" element={<UserCreate />} />

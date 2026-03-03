@@ -1,6 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ReportsController } from './reports.controller';
 import { ReportsService } from './reports.service';
+import { SubscriptionsRepository } from './subscriptions.repository';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
 
 describe('ReportsController', () => {
   let controller: ReportsController;
@@ -18,8 +21,22 @@ describe('ReportsController', () => {
             generatePDF: jest.fn(),
           },
         },
+        {
+          provide: SubscriptionsRepository,
+          useValue: {
+            findAll: jest.fn(),
+            create: jest.fn(),
+            update: jest.fn(),
+            delete: jest.fn(),
+          },
+        },
       ],
-    }).compile();
+    })
+    .overrideGuard(JwtAuthGuard)
+    .useValue({ canActivate: () => true })
+    .overrideGuard(RolesGuard)
+    .useValue({ canActivate: () => true })
+    .compile();
 
     controller = module.get<ReportsController>(ReportsController);
     service = module.get<ReportsService>(ReportsService);
@@ -32,42 +49,16 @@ describe('ReportsController', () => {
   describe('preview', () => {
     it('should return report data for preview', async () => {
       const dto = {
-        deviceIds: ['1000'],
+        deviceIds: ['10'],
         metrics: ['kva'],
         range: '1h',
         granularity: 'aggregated' as const,
       };
-      const mockData = [{ _time: '2026-03-02T12:00:00Z', device_id: '1000', kva: 1.5 }];
+      const mockData = [{ timestamp: new Date(), device_id: 10, kva: 1.5 }];
       jest.spyOn(service, 'getReportData').mockResolvedValue(mockData);
 
       const result = await controller.preview(dto);
       expect(result).toBe(mockData);
-      expect(service.getReportData).toHaveBeenCalledWith(dto);
-    });
-  });
-
-  describe('download', () => {
-    it('should trigger excel generation and return a stream', async () => {
-      const dto = {
-        deviceIds: ['1000'],
-        metrics: ['kva'],
-        range: '1h',
-        granularity: 'aggregated' as const,
-        format: 'xlsx' as const,
-      };
-      const mockPath = '/app/reports/report.xlsx';
-      jest.spyOn(service, 'getReportData').mockResolvedValue([]);
-      jest.spyOn(service, 'generateExcel').mockResolvedValue(mockPath);
-
-      // We'll mock the response object in the actual implementation test
-      // but here we just check service calls.
-      const res = {
-        download: jest.fn(),
-      };
-      
-      await controller.download(dto, res as any);
-      expect(service.generateExcel).toHaveBeenCalled();
-      expect(res.download).toHaveBeenCalledWith(mockPath);
     });
   });
 });

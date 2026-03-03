@@ -10,15 +10,36 @@ import {
 import { ConfigProvider, theme, Switch, Space, Typography } from 'antd';
 import routerBindings, { UnsavedChangesNotifier, CatchAllNavigate, NavigateToResource } from '@refinedev/react-router-v6';
 import dataProvider from '@refinedev/simple-rest';
+import axios from 'axios';
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
-import { DashboardOutlined, GlobalOutlined, BulbOutlined, BulbFilled, RiseOutlined, UserOutlined, FileTextOutlined } from '@ant-design/icons';
+import { 
+  DashboardOutlined, 
+  GlobalOutlined, 
+  BulbOutlined, 
+  BulbFilled, 
+  RiseOutlined, 
+  UserOutlined, 
+  FileTextOutlined,
+  ScheduleOutlined 
+} from '@ant-design/icons';
 import { Dashboard } from './pages/Dashboard';
 import { PeakAnalysis } from './pages/PeakAnalysis';
 import { Reports } from './pages/Reports';
+import { ReportSubscriptions } from './pages/Reports/Subscriptions';
 import { LoginPage } from './pages/Login';
 import { UserList, UserCreate, UserEdit } from './pages/Users';
 import { authProvider } from './authProvider';
 import '@refinedev/antd/dist/reset.css';
+
+const axiosInstance = axios.create();
+
+axiosInstance.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 const { Text } = Typography;
 
@@ -50,7 +71,7 @@ const App = () => {
       }}>
         <Refine
           routerProvider={routerBindings}
-          dataProvider={dataProvider('/api')}
+          dataProvider={dataProvider('/api', axiosInstance as any)}
           authProvider={authProvider}
           notificationProvider={notificationProvider}
           options={{
@@ -81,6 +102,14 @@ const App = () => {
               meta: {
                 label: 'Reports',
                 icon: <FileTextOutlined />,
+              }
+            },
+            {
+              name: 'reports/subscriptions',
+              list: '/reports/subscriptions',
+              meta: {
+                label: 'Schedules',
+                icon: <ScheduleOutlined />,
               }
             },
             {
@@ -150,6 +179,7 @@ const App = () => {
               <Route index element={<Dashboard />} />
               <Route path="/peaks" element={<PeakAnalysis />} />
               <Route path="/reports" element={<Reports />} />
+              <Route path="/reports/subscriptions" element={<ReportSubscriptions />} />
               <Route path="/users">
                 <Route index element={<UserList />} />
                 <Route path="create" element={<UserCreate />} />

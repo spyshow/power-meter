@@ -66,6 +66,23 @@ export class DatabaseInitService implements OnModuleInit {
         );
       `);
 
+      // Ensure report_subscriptions table exists
+      await this.db.execute(sql`
+        CREATE TABLE IF NOT EXISTS report_subscriptions (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          device_ids TEXT NOT NULL,
+          metrics TEXT NOT NULL,
+          range VARCHAR(50) NOT NULL,
+          granularity VARCHAR(50) NOT NULL,
+          format VARCHAR(10) NOT NULL,
+          schedule VARCHAR(100) NOT NULL,
+          is_active INTEGER NOT NULL DEFAULT 1,
+          last_run TIMESTAMPTZ,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+      `);
+
       // Seed default admin if no users exist
       const userCount = await this.db.execute(sql`SELECT COUNT(*) FROM users;`);
       if (parseInt(userCount[0].count, 10) === 0) {

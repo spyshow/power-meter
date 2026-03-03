@@ -10,7 +10,7 @@ ENV PUPPETEER_SKIP_DOWNLOAD=true
 COPY backend/package.json backend/package-lock.json ./backend/
 
 # Install all dependencies for the backend
-RUN cd backend && npm ci --quiet
+RUN cd backend && npm install --quiet
 
 # Copy backend source code and config
 COPY backend/ ./backend/
@@ -42,7 +42,7 @@ RUN apk add --no-cache \
 COPY backend/package.json backend/package-lock.json ./backend/
 
 # Install only production dependencies for the backend
-RUN cd backend && npm ci --quiet --omit=dev
+RUN cd backend && npm install --quiet --omit=dev
 
 # Copy compiled code from builder stage
 COPY --from=builder /app/backend/dist ./backend/dist

@@ -15,7 +15,7 @@ export class EventsController {
   @Roles(Role.Admin, Role.Operator, Role.Viewer)
   stream(): Observable<MessageEvent> {
     const updateEvent = fromEvent(this.eventEmitter, 'device.update').pipe(
-      map((data) => ({ data: JSON.stringify(data) } as MessageEvent)),
+      map((data: any) => ({ data: JSON.stringify({ type: 'update', ...data }) } as MessageEvent)),
     );
 
     const peakEvent = fromEvent(this.eventEmitter, 'peak.detected').pipe(

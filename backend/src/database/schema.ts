@@ -25,3 +25,17 @@ export const users = pgTable('users', {
   role: varchar('role', { length: 50 }).notNull().default('viewer'), // admin, operator, viewer
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+export const reportSubscriptions = pgTable('report_subscriptions', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  deviceIds: text('device_ids').notNull(), // Comma-separated or JSON string
+  metrics: text('metrics').notNull(),     // Comma-separated or JSON string
+  range: varchar('range', { length: 50 }).notNull(), // e.g. '24h', '7d'
+  granularity: varchar('granularity', { length: 50 }).notNull(), // 'raw', 'aggregated'
+  format: varchar('format', { length: 10 }).notNull(), // 'pdf', 'xlsx'
+  schedule: varchar('schedule', { length: 100 }).notNull(), // Cron expression or interval
+  isActive: integer('is_active').notNull().default(1),
+  lastRun: timestamp('last_run'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});

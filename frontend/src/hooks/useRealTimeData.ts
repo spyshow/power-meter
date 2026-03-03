@@ -27,8 +27,10 @@ export const useRealTimeData = (initialDevices: { id: number; name: string }[]) 
   useEffect(() => {
     if (initialDevices.length === 0) return;
 
-    const eventSource = new EventSource('/api/events');
-    console.log("Connecting to SSE stream at /api/events...");
+    const token = localStorage.getItem('token');
+    const url = token ? `/api/events?token=${token}` : '/api/events';
+    const eventSource = new EventSource(url);
+    console.log("Connecting to SSE stream at", url);
 
     eventSource.onopen = () => {
       console.log("SSE Connection opened successfully.");
@@ -36,16 +38,18 @@ export const useRealTimeData = (initialDevices: { id: number; name: string }[]) 
 
     eventSource.onmessage = (event) => {
       const update = JSON.parse(event.data);
-      console.log("Real-time update received for device:", update.id);
-      setData((prev) => ({
-        ...prev,
-        [update.id]: {
-          ...prev[update.id],
-          ...update,
-          status: update.status || 'online',
-          lastUpdate: update.status === 'offline' ? prev[update.id].lastUpdate : Date.now(),
-        }
-      }));
+      if (update.type === 'update') {
+        console.log("Real-time update received for device:", update.id);
+        setData((prev) => ({
+          ...prev,
+          [update.id]: {
+            ...prev[update.id],
+            ...update,
+            status: update.status || 'online',
+            lastUpdate: update.status === 'offline' ? prev[update.id].lastUpdate : Date.now(),
+          }
+        }));
+      }
     };
 
     eventSource.onerror = () => {

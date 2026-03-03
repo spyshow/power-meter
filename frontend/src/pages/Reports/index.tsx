@@ -45,10 +45,17 @@ export const Reports: React.FC = () => {
       params.range = '1h'; // Default if none selected
     }
 
+    const token = localStorage.getItem('token');
+
     mutatePreview({
       url: `${apiUrl}/reports/preview`,
       method: 'post',
       values: params,
+      config: {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
     }, {
       onSuccess: (data: any) => {
         setPreviewData(data.data || []);
@@ -207,7 +214,7 @@ export const Reports: React.FC = () => {
           <Table 
             dataSource={previewData.slice(0, 100)} 
             columns={columns} 
-            rowKey={(record, index) => index}
+            rowKey={(record: any) => `${record.device_id}-${record.timestamp}`}
             pagination={{ pageSize: 10 }}
             size="small"
           />

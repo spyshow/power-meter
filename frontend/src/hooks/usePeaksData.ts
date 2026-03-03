@@ -26,7 +26,9 @@ export const usePeaksData = () => {
       });
 
     // SSE Listener for real-time peaks
-    const eventSource = new EventSource('/api/events');
+    const token = localStorage.getItem('token');
+    const url = token ? `/api/events?token=${token}` : '/api/events';
+    const eventSource = new EventSource(url);
 
     eventSource.onmessage = (event) => {
       try {

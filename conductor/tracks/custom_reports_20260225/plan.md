@@ -7,7 +7,7 @@
 - [x] Task: Local Storage & File Management [0f14161]
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Backend Infrastructure' (Protocol in workflow.md) [d2fe9b3]
 
-## Phase 2: Refined Generation Engines (XLSX/PDF)
+## Phase 2: Refined Generation Engines (XLSX/PDF) [checkpoint: 4330b38]
 Enhance initial services to meet the updated specification.
 - [x] Task: Update XLSX Engine for Multi-Sheet Structure [495d2f1]
     - [x] Write tests for device-per-sheet logic
@@ -17,7 +17,7 @@ Enhance initial services to meet the updated specification.
     - [x] Implement data injection into Puppeteer templates
 - [x] Task: Create `/api/reports/preview` and `/api/reports/download` endpoints [8f14d13]
     - [x] Implement controllers for preview (JSON) and download (Stream)
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Generation Engines' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Generation Engines' (Protocol in workflow.md) [4330b38]
 
 ## Phase 3: Frontend Reports Page & Configuration
 - [ ] Task: Create Reports Configuration UI

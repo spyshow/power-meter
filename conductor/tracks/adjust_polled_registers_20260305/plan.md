@@ -1,6 +1,6 @@
 # Implementation Plan: Adjust Polled Registers & Adaptation
 
-## Phase 1: Database & Backend Core (TDD)
+## Phase 1: Database & Backend Core (TDD) [checkpoint: 55deafa]
 Update the data model and polling engine to support 6 metrics.
 
 - [x] Task: Update telemetry Table Schema [TDD] [7726d7b]
@@ -15,7 +15,7 @@ Update the data model and polling engine to support 6 metrics.
 - [x] Task: Update Peak Tracking Service [TDD] [c5cea78]
     - [ ] Write tests for multi-metric peak detection
     - [ ] Update PeakService to track peaks for all 6 metrics
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Backend Core' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Backend Core' (Protocol in workflow.md) [55deafa]
 
 ## Phase 2: Reporting Engine Adaptation (TDD)
 Ensure reports correctly reflect the expanded data set.

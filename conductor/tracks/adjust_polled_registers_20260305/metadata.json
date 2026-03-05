@@ -1,8 +1,0 @@
-{
-    "description":  "Adjust polled data registers to 6 metrics and adapt frontend, backend, and reports.",
-    "track_id":  "adjust_polled_registers_20260305",
-    "type":  "feature",
-    "created_at":  "2026-03-05T11:21:00Z",
-    "status":  "new",
-    "updated_at":  "2026-03-05T11:21:00Z"
-}

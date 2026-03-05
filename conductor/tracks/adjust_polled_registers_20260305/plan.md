@@ -27,18 +27,18 @@ Ensure reports correctly reflect the expanded data set.
     - [ ] Ensure automated reports process the new telemetry structure without errors
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Reporting' (Protocol in workflow.md)
 
-## Phase 3: Frontend UI Adaptation (TDD)
+## Phase 3: Frontend UI Adaptation (TDD) [checkpoint: 7e27840]
 Update the dashboard and charts to display the new data.
 
-- [ ] Task: Update Dashboard Device Cards [TDD]
+- [~] Task: Update Dashboard Device Cards [TDD]
     - [ ] Write tests for DeviceCard 2x3 grid layout
     - [ ] Implement grid layout and display all 6 metrics in real-time
-- [ ] Task: Update Trend Charts [TDD]
+- [x] Task: Update Trend Charts [TDD]
     - [ ] Write tests for chart data mapping with 6 metrics
     - [ ] Update frontend chart components to support viewing Active/Reactive Power and Power Factor
-- [ ] Task: Update Peaks View [TDD]
+- [x] Task: Update Peaks View [TDD]
     - [ ] Update Peaks table to display 6 parameters
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Frontend UI' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Frontend UI' (Protocol in workflow.md) [7e27840]
 
 ## Phase 4: System Integration & Cleanup
 - [ ] Task: Clear Legacy Telemetry Data

@@ -7,12 +7,23 @@ import { eq, desc, asc, gte, and, sql } from 'drizzle-orm';
 export class TelemetryRepository {
   constructor(@Inject(DRIZZLE_PROVIDER) private db: any) {}
 
-  async create(data: { deviceId: number; voltage: number; current: number; kva: number }) {
+  async create(data: {
+    deviceId: number;
+    voltage: number;
+    current: number;
+    activePower: number;
+    reactivePower: number;
+    apparentPower: number;
+    powerFactor: number;
+  }) {
     return await this.db.insert(telemetry).values({
       deviceId: data.deviceId,
       voltage: data.voltage,
       current: data.current,
-      kva: data.kva,
+      activePower: data.activePower,
+      reactivePower: data.reactivePower,
+      apparentPower: data.apparentPower,
+      powerFactor: data.powerFactor,
       timestamp: new Date(),
     });
   }
@@ -43,11 +54,14 @@ export class TelemetryRepository {
 
     // Use TimescaleDB time_bucket for aggregation
     return await this.db.execute(sql`
-      SELECT 
+      SELECT
         time_bucket(${sql.raw(`'${interval}'`)}, timestamp) AS timestamp,
         AVG(voltage) as voltage,
         AVG(current) as current,
-        AVG(kva) as kva
+        AVG(active_power) as "activePower",
+        AVG(reactive_power) as "reactivePower",
+        AVG(apparent_power) as "apparentPower",
+        AVG(power_factor) as "powerFactor"
       FROM telemetry
       WHERE device_id = ${deviceId} AND timestamp >= ${startTime}
       GROUP BY timestamp

@@ -34,12 +34,15 @@ describe('TelemetryRepository', () => {
     expect(repository).toBeDefined();
   });
 
-  it('should insert telemetry data', async () => {
+  it('should insert telemetry data with all 6 metrics', async () => {
     const data = {
       deviceId: 10,
       voltage: 230.5,
       current: 5.2,
-      kva: 1.2,
+      activePower: 1.1,
+      reactivePower: 0.5,
+      apparentPower: 1.2,
+      powerFactor: 0.95,
     };
 
     await repository.create(data);

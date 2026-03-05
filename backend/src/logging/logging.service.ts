@@ -8,13 +8,9 @@ import { PeakService } from '../peaks/peak.service';
 export class LoggingService implements OnModuleInit {
   private readonly DEVICE_IDS = [10, 20, 30, 40, 50, 60];
   
-  // PM5310 Register addresses (Converted to 0-based for Modbus library)
-  private readonly REG_CURRENT_AVG = 3010 - 1;
-  private readonly REG_VOLTAGE_LL_AVG = 3026 - 1;
-  private readonly REG_ACTIVE_POWER_TOT = 3060 - 1;
-  private readonly REG_REACTIVE_POWER_TOT = 3068 - 1;
-  private readonly REG_APPARENT_POWER_TOT = 3076 - 1;
-  private readonly REG_POWER_FACTOR_TOT = 3084 - 1;
+  // Base register for the block we want to read
+  private readonly START_REG = 3010 - 1; // 3009
+  private readonly REG_COUNT = (3086 - 3010); // Length to cover up to 3085
 
   constructor(
     private modbusService: ModbusService,
@@ -24,25 +20,30 @@ export class LoggingService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    console.log('[LoggingService] Waiting 5s for DB init before starting polling...');
-    setTimeout(() => this.startLogging(), 5000);
+    console.log('[LoggingService] Initializing high-frequency polling (1Hz target)...');
+    // Start polling after a short delay for DB init
+    setTimeout(() => this.pollLoop(), 5000);
   }
 
-  async startLogging() {
-    const runLogging = async () => {
-      for (const id of this.DEVICE_IDS) {
-        if (!this.modbusService.isConnected()) break;
-        try {
-          await this.pollDevice(id);
-        } catch (error) {
-          // Handled in pollDevice
-        }
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      }
-      setTimeout(() => runLogging(), 1000);
-    };
+  private async pollLoop() {
+    const startTime = Date.now();
 
-    runLogging();
+    for (const id of this.DEVICE_IDS) {
+      if (!this.modbusService.isConnected()) break;
+      try {
+        await this.pollDeviceBulk(id);
+      } catch (error) {
+        // Error logged in pollDeviceBulk
+      }
+      // Small 20ms gap between different devices to let the gateway breathe
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+
+    // Calculate how long the poll took and adjust the next cycle to hit exactly 1s
+    const elapsed = Date.now() - startTime;
+    const delay = Math.max(0, 1000 - elapsed);
+    
+    setTimeout(() => this.pollLoop(), delay);
   }
 
   private round(val: number, decimals: number = 1): number {
@@ -50,22 +51,35 @@ export class LoggingService implements OnModuleInit {
     return Math.round(val * factor) / factor;
   }
 
-  async pollDevice(id: number) {
-    try {
-      const currentRaw = await this.modbusService.readFloat(id, this.REG_CURRENT_AVG);
-      const voltageRaw = await this.modbusService.readFloat(id, this.REG_VOLTAGE_LL_AVG);
-      const activePowerRaw = await this.modbusService.readFloat(id, this.REG_ACTIVE_POWER_TOT);
-      const reactivePowerRaw = await this.modbusService.readFloat(id, this.REG_REACTIVE_POWER_TOT);
-      const apparentPowerRaw = await this.modbusService.readFloat(id, this.REG_APPARENT_POWER_TOT);
-      const powerFactorRaw = await this.modbusService.readFloat(id, this.REG_POWER_FACTOR_TOT);
+  private extractFloat(data: number[], offset: number): number {
+    const buffer = Buffer.alloc(4);
+    buffer.writeUInt16BE(data[offset], 0);
+    buffer.writeUInt16BE(data[offset + 1], 2);
+    return buffer.readFloatBE(0);
+  }
 
-      // Round values: PF to 2 decimals, others to 1
-      const current = this.round(currentRaw, 1);
-      const voltage = this.round(voltageRaw, 1);
-      const activePower = this.round(activePowerRaw, 1);
-      const reactivePower = this.round(reactivePowerRaw, 1);
-      const apparentPower = this.round(apparentPowerRaw, 1);
-      const powerFactor = this.round(powerFactorRaw, 2);
+  async pollDeviceBulk(id: number) {
+    try {
+      // Read the entire block from 3009 to 3085 (76 registers)
+      // This is much faster than 6 separate network calls
+      const data = await this.modbusService.readRaw(id, this.START_REG, this.REG_COUNT);
+
+      if (!data || data.length < this.REG_COUNT) {
+        throw new Error(`Insufficient data received for device ${id}`);
+      }
+
+      // Map offsets relative to 3009 (0-based start)
+      // 3010 is index 0
+      // 3026 is index (3026-3010) = 16
+      // 3060 is index (3060-3010) = 50
+      // ... each metric is 2 registers
+      
+      const current = this.round(this.extractFloat(data, 0), 1);           // 3010
+      const voltage = this.round(this.extractFloat(data, 16), 1);          // 3026
+      const activePower = this.round(this.extractFloat(data, 50), 1);      // 3060
+      const reactivePower = this.round(this.extractFloat(data, 58), 1);    // 3068
+      const apparentPower = this.round(this.extractFloat(data, 66), 1);    // 3076
+      const powerFactor = this.round(this.extractFloat(data, 74), 2);      // 3084
 
       await this.telemetryRepo.create({
         deviceId: id,
@@ -77,7 +91,7 @@ export class LoggingService implements OnModuleInit {
         powerFactor,
       });
 
-      // Check peaks
+      // Update peaks
       await this.peakService.checkPeak(id, 'current', current);
       await this.peakService.checkPeak(id, 'voltage', voltage);
       await this.peakService.checkPeak(id, 'activePower', activePower);
@@ -85,21 +99,15 @@ export class LoggingService implements OnModuleInit {
       await this.peakService.checkPeak(id, 'apparentPower', apparentPower);
       await this.peakService.checkPeak(id, 'powerFactor', powerFactor);
 
-      // Emit event
+      // Emit for UI
       this.eventEmitter.emit('device.update', {
-        id,
-        current,
-        voltage,
-        activePower,
-        reactivePower,
-        apparentPower,
-        powerFactor,
+        id, current, voltage, activePower, reactivePower, apparentPower, powerFactor,
         status: 'online',
       });
+
     } catch (error) {
-      console.error(`[LoggingService] Failed to poll device ${id}:`, error.message);
+      console.error(`[LoggingService] Bulk poll failed for device ${id}:`, error.message);
       this.eventEmitter.emit('device.update', { id, status: 'offline' });
-      throw error;
     }
   }
 }

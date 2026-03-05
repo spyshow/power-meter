@@ -46,34 +46,53 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
   }
 
   async readFloat(deviceId: number, address: number): Promise<number> {
+    const results = await this.readFloats(deviceId, address, 1);
+    return results[0];
+  }
+
+  async readFloats(deviceId: number, startAddress: number, count: number): Promise<number[]> {
     if (!this.connected) {
       throw new Error('Modbus client not connected');
     }
 
     try {
       this.client.setID(deviceId);
-      // Small delay after setID as per original logic
+      // Essential delay for PAS600 serial switching
       await new Promise((resolve) => setTimeout(resolve, 10));
 
-      const result = await this.client.readHoldingRegisters(address, 2);
-      if (!result || !result.data || result.data.length < 2) {
-        throw new Error(`Invalid Modbus response for address ${address}`);
+      // Each float is 2 registers
+      const result = await this.client.readHoldingRegisters(startAddress, count * 2);
+      
+      if (!result || !result.data || result.data.length < count * 2) {
+        throw new Error(`Invalid Modbus response for address ${startAddress}`);
       }
 
-      const buffer = Buffer.alloc(4);
-      buffer.writeUInt16BE(result.data[0], 0);
-      buffer.writeUInt16BE(result.data[1], 2);
-      return buffer.readFloatBE(0);
+      const floats: number[] = [];
+      for (let i = 0; i < count; i++) {
+        const buffer = Buffer.alloc(4);
+        buffer.writeUInt16BE(result.data[i * 2], 0);
+        buffer.writeUInt16BE(result.data[i * 2 + 1], 2);
+        floats.push(buffer.readFloatBE(0));
+      }
+      return floats;
     } catch (error) {
-      // If communication error, mark as disconnected if appropriate
       const msg = error instanceof Error ? error.message : String(error);
-      if (msg.includes('ECONN') || msg.includes('Port Not Open') || msg.includes('closed') || msg.includes('Timeout')) {
-        if (!msg.includes('Timeout')) {
-          this.connected = false;
-          this.connect();
-        }
+      if (msg.includes('ECONN') || msg.includes('Port Not Open') || msg.includes('closed')) {
+        this.connected = false;
+        this.connect();
       }
       throw error;
     }
+  }
+
+  /**
+   * Reads a raw buffer of registers. Useful for non-contiguous data in a range.
+   */
+  async readRaw(deviceId: number, startAddress: number, length: number): Promise<number[]> {
+    if (!this.connected) throw new Error('Modbus client not connected');
+    this.client.setID(deviceId);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    const result = await this.client.readHoldingRegisters(startAddress, length);
+    return result.data;
   }
 }

@@ -14,7 +14,7 @@ describe('LoggingService', () => {
 
   beforeEach(async () => {
     mockModbusService = {
-      readFloat: jest.fn(),
+      readRaw: jest.fn(),
       isConnected: jest.fn().mockReturnValue(true),
     };
     mockTelemetryRepo = {
@@ -30,40 +30,41 @@ describe('LoggingService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         LoggingService,
-        {
-          provide: ModbusService,
-          useValue: mockModbusService,
-        },
-        {
-          provide: TelemetryRepository,
-          useValue: mockTelemetryRepo,
-        },
-        {
-          provide: EventEmitter2,
-          useValue: mockEventEmitter,
-        },
-        {
-          provide: PeakService,
-          useValue: mockPeakService,
-        },
+        { provide: ModbusService, useValue: mockModbusService },
+        { provide: TelemetryRepository, useValue: mockTelemetryRepo },
+        { provide: EventEmitter2, useValue: mockEventEmitter },
+        { provide: PeakService, useValue: mockPeakService },
       ],
     }).compile();
 
     service = module.get<LoggingService>(LoggingService);
   });
 
-  it('should poll a device and save rounded 6-metric data', async () => {
+  it('should poll a device using bulk read and save rounded data', async () => {
     const deviceId = 10;
-    mockModbusService.readFloat
-      .mockResolvedValueOnce(5.234)   // Current -> 5.2
-      .mockResolvedValueOnce(230.567) // Voltage -> 230.6
-      .mockResolvedValueOnce(1.111)   // Active -> 1.1
-      .mockResolvedValueOnce(0.555)   // Reactive -> 0.6
-      .mockResolvedValueOnce(1.222)   // Apparent -> 1.2
-      .mockResolvedValueOnce(0.954);  // PowerFactor -> 0.95
+    // Create a mock data array of 76 registers
+    const mockData = new Array(76).fill(0);
+    
+    // Helper to write float to our mock array
+    const writeFloat = (val: number, offset: number) => {
+      const buf = Buffer.alloc(4);
+      buf.writeFloatBE(val, 0);
+      mockData[offset] = buf.readUInt16BE(0);
+      mockData[offset + 1] = buf.readUInt16BE(2);
+    };
 
-    await service.pollDevice(deviceId);
+    writeFloat(5.234, 0);   // Current
+    writeFloat(230.567, 16); // Voltage
+    writeFloat(1.111, 50);  // Active
+    writeFloat(0.555, 58);  // Reactive
+    writeFloat(1.222, 66);  // Apparent
+    writeFloat(0.954, 74);  // PF
 
+    mockModbusService.readRaw.mockResolvedValue(mockData);
+
+    await service.pollDeviceBulk(deviceId);
+
+    expect(mockModbusService.readRaw).toHaveBeenCalledWith(deviceId, 3009, 76);
     expect(mockTelemetryRepo.create).toHaveBeenCalledWith(
       expect.objectContaining({
         deviceId,

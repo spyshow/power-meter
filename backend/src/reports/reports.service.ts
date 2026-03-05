@@ -6,6 +6,7 @@ import * as ExcelJS from 'exceljs';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as puppeteer from 'puppeteer';
+import dayjs from 'dayjs';
 
 export interface ReportParams {
   deviceIds: string[];
@@ -76,36 +77,51 @@ export class ReportsService {
         ORDER BY timestamp ASC
       `;
       const result = await this.db.execute(query);
-      return result.rows || result;
+      const rows = result.rows || result;
+      return rows.map((r: any) => ({
+        device_id: r.device_id,
+        timestamp: r.timestamp,
+        ...r
+      }));
     } else {
       let interval = '1 minute';
       if (params.range === '6d') interval = '1 hour';
       else if (params.range === '24h') interval = '10 minutes';
       else if (params.range === '6h') interval = '5 minutes';
 
-      const binnedSelect = metrics.map(m => `AVG(${this.mapMetricToColumn(m)}) as "${m}"`).join(', ');
+      // Select raw averages then round in JS to avoid SQL casting complexity for multiple aliases
+      const binnedSelect = metrics.map(m => `AVG(${this.mapMetricToColumn(m)}) as "${m}_raw"`).join(', ');
 
       const query = sql`
         SELECT
           device_id,
-          time_bucket(${sql.raw(`'${interval}'`)}, timestamp) AS timestamp,
+          time_bucket(${sql.raw(`'${interval}'`)}, timestamp) AS bucket_time,
           ${sql.raw(binnedSelect)}
         FROM telemetry
         WHERE device_id IN (${sql.join(deviceIds, sql`, `)})
           AND timestamp >= ${startStr}
           AND timestamp <= ${endStr}
-        GROUP BY device_id, timestamp
-        ORDER BY timestamp ASC
+        GROUP BY 1, 2
+        ORDER BY 2 ASC
       `;
       const result = await this.db.execute(query);
       const rows = result.rows || result;
       return rows.map((r: any) => {
-        const row: any = { ...r };
-        // Ensure all metrics are numbers
+        const cleaned: any = {
+          device_id: r.device_id,
+          timestamp: r.bucket_time
+        };
         metrics.forEach(m => {
-          if (row[m] !== undefined) row[m] = parseFloat(row[m]);
+          const rawVal = parseFloat(r[`${m}_raw`]);
+          if (!isNaN(rawVal)) {
+            const decimals = m === 'powerFactor' ? 2 : 1;
+            const factor = Math.pow(10, decimals);
+            cleaned[m] = Math.round(rawVal * factor) / factor;
+          } else {
+            cleaned[m] = null;
+          }
         });
-        return row;
+        return cleaned;
       });
     }
   }
@@ -126,7 +142,7 @@ export class ReportsService {
 
     const summaryData = devices.map((deviceId) => {
       const deviceData = data.filter((item) => (item.device_id || item.deviceId || 'Unknown') === deviceId);
-      const apparentValues = deviceData.map((d) => Number(d.apparentPower) || 0).filter((v) => v > 0);
+      const apparentValues = deviceData.map((d) => Number(d.apparentPower || d.apparent_power) || 0).filter((v) => v > 0);
       return {
         deviceId,
         count: deviceData.length,
@@ -151,7 +167,7 @@ export class ReportsService {
           label: `Device ${deviceId} (Apparent Power)`,
           data: chartLabels.map((time) => {
             const item = data.find((d) => new Date(d.timestamp).toISOString() === time && (d.device_id || d.deviceId || 'Unknown') === deviceId);
-            return item ? Number(item.apparentPower) || 0 : null;
+            return item ? Number(item.apparentPower || item.apparent_power) || 0 : null;
           }),
           borderColor: colors[index % colors.length],
           fill: false,
@@ -235,7 +251,7 @@ export class ReportsService {
       const devices = [...new Set(data.map((item) => item.device_id || item.deviceId || 'Unknown'))];
       const summary = devices.map((deviceId) => {
         const deviceData = data.filter((item) => (item.device_id || item.deviceId || 'Unknown') === deviceId);
-        const apparentValues = deviceData.map((d) => Number(d.apparentPower) || 0).filter((v) => v > 0);
+        const apparentValues = deviceData.map((d) => Number(d.apparentPower || d.apparent_power) || 0).filter((v) => v > 0);
         return {
           deviceId,
           count: deviceData.length,
@@ -251,7 +267,7 @@ export class ReportsService {
           label: `Device ${deviceId} (Apparent Power)`,
           data: chartLabels.map((time) => {
             const item = data.find((d) => new Date(d.timestamp).toISOString() === time && (d.device_id || d.deviceId || 'Unknown') === deviceId);
-            return item ? Number(item.apparentPower) || 0 : null;
+            return item ? Number(item.apparentPower || item.apparent_power) || 0 : null;
           }),
           borderColor: colors[index % colors.length],
           backgroundColor: colors[index % colors.length].replace('1)', '0.2)'),
@@ -262,13 +278,19 @@ export class ReportsService {
 
       const tableHeaders = data.length > 0 ? `
         <tr>
-          ${Object.keys(data[0]).map((key) => `<th>${key}</th>`).join('')}
+          ${Object.keys(data[0]).map((key) => `<th>${key.toUpperCase()}</th>`).join('')}
         </tr>
       ` : '';
 
       const tableRows = data.map((row) => `
         <tr>
-          ${Object.values(row).map((val) => `<td>${val}</td>`).join('')}
+          ${Object.entries(row).map(([key, val]) => {
+            let displayVal = val;
+            if (key === 'timestamp') {
+              displayVal = dayjs(val as any).format('YYYY-MM-DD HH:mm:ss');
+            }
+            return `<td>${displayVal}</td>`;
+          }).join('')}
         </tr>
       `).join('');
 

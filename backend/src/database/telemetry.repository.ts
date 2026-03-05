@@ -16,7 +16,6 @@ export class TelemetryRepository {
     apparentPower: number;
     powerFactor: number;
   }) {
-    // Using raw SQL to bypass any Drizzle schema caching/mismatch issues
     return await this.db.execute(sql`
       INSERT INTO telemetry (
         device_id, 
@@ -72,8 +71,8 @@ export class TelemetryRepository {
         AVG(power_factor) as power_factor
       FROM telemetry
       WHERE device_id = ${deviceId} AND timestamp >= ${startTime.toISOString()}
-      GROUP BY timestamp
-      ORDER BY timestamp ASC
+      GROUP BY 1
+      ORDER BY 1 ASC
     `);
     return results.rows || results;
   }

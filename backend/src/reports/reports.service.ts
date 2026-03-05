@@ -44,33 +44,23 @@ export class ReportsService {
     }
 
     const deviceIds = params.deviceIds.map(id => parseInt(id));
-    const metrics = params.metrics; // voltage, current, kva
-    
+    const metrics = params.metrics; // voltage, current, active_power, etc.
+
     const startStr = startTime.toISOString();
     const endStr = endTime.toISOString();
 
     if (params.granularity === 'raw') {
-      const selectMetrics = metrics.map(m => `ROUND(CAST(${m} AS numeric), 2) as ${m}`).join(', ');
-      
+      const selectMetrics = metrics.map(m => `ROUND(CAST(${this.mapMetricToColumn(m)} AS numeric), 2) as "${m}"`).join(', ');
+
       const query = sql`
-        WITH raw_data AS (
-          SELECT 
-            device_id, 
-            timestamp, 
-            ${sql.raw(metrics.join(', '))},
-            LAG(kva) OVER (PARTITION BY device_id ORDER BY timestamp) as prev_kva
-          FROM telemetry
-          WHERE device_id IN (${sql.join(deviceIds, sql`, `)})
-            AND timestamp >= ${startStr}
-            AND timestamp <= ${endStr}
-        )
-        SELECT 
+        SELECT
           device_id,
           timestamp,
-          ${sql.raw(metrics.map(m => `ROUND(CAST(${m} AS numeric), 2) as ${m}`).join(', '))},
-          ROUND(CAST(prev_kva AS numeric), 2) as previous_value,
-          ROUND(CAST(CASE WHEN prev_kva > 0 THEN ((kva - prev_kva) / prev_kva) * 100 ELSE 0 END AS numeric), 2) as increase_percent
-        FROM raw_data
+          ${sql.raw(selectMetrics)}
+        FROM telemetry
+        WHERE device_id IN (${sql.join(deviceIds, sql`, `)})
+          AND timestamp >= ${startStr}
+          AND timestamp <= ${endStr}
         ORDER BY timestamp ASC
       `;
       const result = await this.db.execute(query);
@@ -82,37 +72,19 @@ export class ReportsService {
       else if (params.range === '24h') interval = '10 minutes';
       else if (params.range === '6h') interval = '5 minutes';
 
-      const binnedMetrics = metrics.filter(m => m !== 'kva').map(m => `AVG(${m}) as avg_${m}`);
-      const binnedSelect = ['AVG(kva) as avg_kva', ...binnedMetrics].join(', ');
-
-      const selectMetrics = metrics.filter(m => m !== 'kva').map(m => `ROUND(CAST(avg_${m} AS numeric), 2) as ${m}`);
-      const finalSelect = ['ROUND(CAST(avg_kva AS numeric), 2) as kva', ...selectMetrics].join(', ');
+      const binnedSelect = metrics.map(m => `AVG(${this.mapMetricToColumn(m)}) as avg_${m}`).join(', ');
+      const finalSelect = metrics.map(m => `ROUND(CAST(avg_${m} AS numeric), 2) as "${m}"`).join(', ');
 
       const query = sql`
-        WITH binned AS (
-          SELECT 
-            device_id,
-            time_bucket(${sql.raw(`'${interval}'`)}, timestamp) AS bucket_time,
-            ${sql.raw(binnedSelect)}
-          FROM telemetry
-          WHERE device_id IN (${sql.join(deviceIds, sql`, `)})
-            AND timestamp >= ${startStr}
-            AND timestamp <= ${endStr}
-          GROUP BY device_id, bucket_time
-        ),
-        with_prev AS (
-          SELECT 
-            *,
-            LAG(avg_kva) OVER (PARTITION BY device_id ORDER BY bucket_time) as prev_avg_kva
-          FROM binned
-        )
-        SELECT 
+        SELECT
           device_id,
-          bucket_time as timestamp,
-          ${sql.raw(finalSelect)},
-          ROUND(CAST(prev_avg_kva AS numeric), 2) as previous_value,
-          ROUND(CAST(CASE WHEN prev_avg_kva > 0 THEN ((avg_kva - prev_avg_kva) / prev_avg_kva) * 100 ELSE 0 END AS numeric), 2) as increase_percent
-        FROM with_prev
+          time_bucket(${sql.raw(`'${interval}'`)}, timestamp) AS timestamp,
+          ${sql.raw(finalSelect)}
+        FROM telemetry
+        WHERE device_id IN (${sql.join(deviceIds, sql`, `)})
+          AND timestamp >= ${startStr}
+          AND timestamp <= ${endStr}
+        GROUP BY device_id, timestamp
         ORDER BY timestamp ASC
       `;
       const result = await this.db.execute(query);
@@ -120,24 +92,17 @@ export class ReportsService {
     }
   }
 
-  private roundData(data: any[]): any[] {
-    // Rounding now handled in SQL, but keeping as a safety net
-    return data.map((row: any) => {
-      const newRow: any = {};
-      for (const [key, value] of Object.entries(row)) {
-        if (['device_id', 'deviceId', 'id', 'timestamp', 'bucket_time', '_time'].includes(key)) {
-          newRow[key] = value;
-          continue;
-        }
-        const num = parseFloat(value as string);
-        if (!isNaN(num)) {
-          newRow[key] = Number(num.toFixed(2));
-        } else {
-          newRow[key] = value;
-        }
-      }
-      return newRow;
-    });
+  private mapMetricToColumn(metric: string): string {
+    const mapping: Record<string, string> = {
+      voltage: 'voltage',
+      current: 'current',
+      activePower: 'active_power',
+      reactivePower: 'reactive_power',
+      apparentPower: 'apparent_power',
+      powerFactor: 'power_factor',
+      kva: 'apparent_power', // Backward compatibility for any old requests
+    };
+    return mapping[metric] || metric;
   }
 
   async generateExcel(data: any[], fileName: string): Promise<string> {
@@ -149,20 +114,20 @@ export class ReportsService {
     summarySheet.columns = [
       { header: 'Device ID', key: 'deviceId', width: 15 },
       { header: 'Data Points', key: 'count', width: 15 },
-      { header: 'Max kVA', key: 'maxKva', width: 15 },
-      { header: 'Avg kVA', key: 'avgKva', width: 15 },
+      { header: 'Avg Apparent Power', key: 'avgApparent', width: 20 },
+      { header: 'Max Apparent Power', key: 'maxApparent', width: 20 },
     ];
 
     summarySheet.getRow(1).font = { bold: true };
 
     const summaryData = devices.map((deviceId) => {
       const deviceData = data.filter((item) => (item.device_id || item.deviceId || 'Unknown') === deviceId);
-      const kvaValues = deviceData.map((d) => Number(d.kva) || 0).filter((v) => v > 0);
+      const apparentValues = deviceData.map((d) => Number(d.apparentPower || d.kva) || 0).filter((v) => v > 0);
       return {
         deviceId,
         count: deviceData.length,
-        avgKva: kvaValues.length ? (kvaValues.reduce((a, b) => a + b, 0) / kvaValues.length).toFixed(2) : 'N/A',
-        maxKva: kvaValues.length ? Math.max(...kvaValues).toFixed(2) : 'N/A',
+        avgApparent: apparentValues.length ? (apparentValues.reduce((a, b) => a + b, 0) / apparentValues.length).toFixed(2) : 'N/A',
+        maxApparent: apparentValues.length ? Math.max(...apparentValues).toFixed(2) : 'N/A',
       };
     });
 
@@ -173,7 +138,7 @@ export class ReportsService {
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
-    
+
     try {
       const page = await browser.newPage();
 
@@ -181,10 +146,10 @@ export class ReportsService {
       const datasets = devices.map((deviceId, index) => {
         const colors = ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)'];
         return {
-          label: `Device ${deviceId} (kVA)`,
+          label: `Device ${deviceId} (Apparent Power)`,
           data: chartLabels.map((time) => {
             const item = data.find((d) => new Date(d.timestamp).toISOString() === time && (d.device_id || d.deviceId || 'Unknown') === deviceId);
-            return item ? Number(item.kva) || 0 : null;
+            return item ? Number(item.apparentPower || item.kva) || 0 : null;
           }),
           borderColor: colors[index % colors.length],
           fill: false,
@@ -267,19 +232,19 @@ export class ReportsService {
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
-    
+
     try {
       const page = await browser.newPage();
 
       const devices = [...new Set(data.map((item) => item.device_id || item.deviceId || 'Unknown'))];
       const summary = devices.map((deviceId) => {
         const deviceData = data.filter((item) => (item.device_id || item.deviceId || 'Unknown') === deviceId);
-        const kvaValues = deviceData.map((d) => Number(d.kva) || 0).filter((v) => v > 0);
+        const apparentValues = deviceData.map((d) => Number(d.apparentPower || d.kva) || 0).filter((v) => v > 0);
         return {
           deviceId,
           count: deviceData.length,
-          avgKva: kvaValues.length ? (kvaValues.reduce((a, b) => a + b, 0) / kvaValues.length).toFixed(2) : 'N/A',
-          maxKva: kvaValues.length ? Math.max(...kvaValues).toFixed(2) : 'N/A',
+          avgApparent: apparentValues.length ? (apparentValues.reduce((a, b) => a + b, 0) / apparentValues.length).toFixed(2) : 'N/A',
+          maxApparent: apparentValues.length ? Math.max(...apparentValues).toFixed(2) : 'N/A',
         };
       });
 
@@ -287,10 +252,10 @@ export class ReportsService {
       const datasets = devices.map((deviceId, index) => {
         const colors = ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)'];
         return {
-          label: `Device ${deviceId} (kVA)`,
+          label: `Device ${deviceId} (Apparent Power)`,
           data: chartLabels.map((time) => {
             const item = data.find((d) => new Date(d.timestamp).toISOString() === time && (d.device_id || d.deviceId || 'Unknown') === deviceId);
-            return item ? Number(item.kva) || 0 : null;
+            return item ? Number(item.apparentPower || item.kva) || 0 : null;
           }),
           borderColor: colors[index % colors.length],
           backgroundColor: colors[index % colors.length].replace('1)', '0.2)'),
@@ -299,17 +264,17 @@ export class ReportsService {
         };
       });
 
-      const tableRows = data.map((row) => `
-        <tr>
-          ${Object.values(row).map((val) => `<td>${val}</td>`).join('')}
-        </tr>
-      `).join('');
-
       const tableHeaders = data.length > 0 ? `
         <tr>
           ${Object.keys(data[0]).map((key) => `<th>${key}</th>`).join('')}
         </tr>
       ` : '';
+
+      const tableRows = data.map((row) => `
+        <tr>
+          ${Object.values(row).map((val) => `<td>${val}</td>`).join('')}
+        </tr>
+      `).join('');
 
       const html = `
         <html>
@@ -323,8 +288,8 @@ export class ReportsService {
               .summary-card h3 { margin-top: 0; color: #34495e; font-size: 14px; text-transform: uppercase; }
               .summary-card p { margin: 5px 0; font-size: 18px; font-weight: bold; color: #2980b9; }
               .chart-container { width: 100%; height: 400px; margin-bottom: 40px; }
-              table { width: 100%; border-collapse: collapse; font-size: 10px; table-layout: fixed; }
-              th, td { border: 1px solid #eee; padding: 6px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+              table { width: 100%; border-collapse: collapse; font-size: 8px; table-layout: fixed; }
+              th, td { border: 1px solid #eee; padding: 4px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
               th { background-color: #f4f7f6; color: #666; font-weight: 600; }
               tr:nth-child(even) { background-color: #fafafa; }
               .page-break { page-break-before: always; }
@@ -333,13 +298,13 @@ export class ReportsService {
           <body>
             <h1>MCGI Power Logger: Performance Report</h1>
             <p style="text-align: center; color: #7f8c8d;">Generated on ${new Date().toLocaleString()} | File: ${fileName}</p>
-            
+
             <div class="summary-container">
               ${summary.map((s) => `
                 <div class="summary-card">
                   <h3>Device ${s.deviceId}</h3>
-                  <p>Max: ${s.maxKva} kVA</p>
-                  <p>Avg: ${s.avgKva} kVA</p>
+                  <p>Max App: ${s.maxApparent} kVA</p>
+                  <p>Avg App: ${s.avgApparent} kVA</p>
                   <span style="font-size: 11px; color: #95a5a6;">Points: ${s.count}</span>
                 </div>
               `).join('')}
@@ -361,7 +326,7 @@ export class ReportsService {
                   responsive: true,
                   maintainAspectRatio: false,
                   plugins: {
-                    title: { display: true, text: 'Power Consumption Trend (kVA)' },
+                    title: { display: true, text: 'Apparent Power Trend (kVA)' },
                     legend: { position: 'bottom' }
                   },
                   scales: {

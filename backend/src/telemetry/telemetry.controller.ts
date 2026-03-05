@@ -13,7 +13,6 @@ export class TelemetryController {
   @Get('devices')
   @Roles(Role.Admin, Role.Operator, Role.Viewer)
   getDevices() {
-    // Ported from src/devices.ts
     return [
       { id: 10, name: '1000' },
       { id: 20, name: '2000' },
@@ -47,7 +46,6 @@ export class TelemetryController {
         const msMap: Record<string, number> = { m: 60 * 1000, h: 60 * 60 * 1000, d: 24 * 60 * 60 * 1000 };
         startTime = new Date(now.getTime() - value * msMap[unit]);
 
-        // Determine aggregation interval
         if (unit === 'm') interval = '1s';
         else if (unit === 'h') {
           if (value <= 1) interval = '5s';
@@ -57,14 +55,17 @@ export class TelemetryController {
       }
     }
 
-    const data = await this.telemetryRepo.getHistory(id, startTime, interval);
-    
-    // Map to frontend format (_time instead of timestamp)
-    return data.map((row: any) => ({
+    const result = await this.telemetryRepo.getHistory(id, startTime, interval);
+    const rows = result.rows || result;
+
+    return rows.map((row: any) => ({
       _time: row.timestamp,
       voltage: parseFloat(row.voltage),
       current: parseFloat(row.current),
-      kva: parseFloat(row.kva),
+      activePower: parseFloat(row.active_power || row.activePower),
+      reactivePower: parseFloat(row.reactive_power || row.reactivePower),
+      apparentPower: parseFloat(row.apparent_power || row.apparentPower || row.kva),
+      powerFactor: parseFloat(row.power_factor || row.powerFactor),
     }));
   }
 }

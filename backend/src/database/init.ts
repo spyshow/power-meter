@@ -13,16 +13,14 @@ export class DatabaseInitService implements OnModuleInit {
   async initializeDatabase() {
     console.log('[DatabaseInit] Initializing TimescaleDB...');
     try {
-      // 1. Create TimescaleDB extension if not exists
       await this.db.execute(sql`CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;`);
 
-      // 2. Create tables (handled by drizzle-kit in a real migration, but here for initial setup)
-      // Note: In a production app, we would use drizzle-kit push or migrations.
-      // For this migration track, we'll ensure the hypertable is created.
+      // FRESH START: Drop and recreate telemetry table to ensure clean schema
+      console.log('[DatabaseInit] Performing Fresh Start: Dropping telemetry table...');
+      await this.db.execute(sql`DROP TABLE IF EXISTS telemetry CASCADE;`);
 
-      // Ensure telemetry table exists (minimal schema for hypertable creation)
       await this.db.execute(sql`
-        CREATE TABLE IF NOT EXISTS telemetry (
+        CREATE TABLE telemetry (
           id SERIAL,
           timestamp TIMESTAMPTZ NOT NULL,
           device_id INTEGER NOT NULL,
@@ -36,17 +34,16 @@ export class DatabaseInitService implements OnModuleInit {
         );
       `);
 
-      // 3. Convert to hypertable if not already
       try {
         await this.db.execute(sql`
           SELECT create_hypertable('telemetry', 'timestamp', if_not_exists => TRUE);      
         `);
-        console.log('[DatabaseInit] Telemetry hypertable verified/created.');
+        console.log('[DatabaseInit] Telemetry hypertable created.');
       } catch (err) {
-        console.warn('[DatabaseInit] Failed to create hypertable (it might already exist):', err.message);
+        console.warn('[DatabaseInit] Hypertable setup note:', err.message);
       }
 
-      // Ensure peaks table exists
+      // Ensure other tables exist
       await this.db.execute(sql`
         CREATE TABLE IF NOT EXISTS peaks (
           id SERIAL PRIMARY KEY,
@@ -58,7 +55,6 @@ export class DatabaseInitService implements OnModuleInit {
         );
       `);
 
-      // Ensure users table exists
       await this.db.execute(sql`
         CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
@@ -69,7 +65,6 @@ export class DatabaseInitService implements OnModuleInit {
         );
       `);
 
-      // Ensure report_subscriptions table exists
       await this.db.execute(sql`
         CREATE TABLE IF NOT EXISTS report_subscriptions (
           id SERIAL PRIMARY KEY,
@@ -86,17 +81,15 @@ export class DatabaseInitService implements OnModuleInit {
         );
       `);
 
-      // Seed default admin if no users exist
-      const userCount = await this.db.execute(sql`SELECT COUNT(*) FROM users;`);
-      if (parseInt(userCount[0].count, 10) === 0) {
+      const userCountResult = await this.db.execute(sql`SELECT COUNT(*) FROM users;`);
+      const userCount = parseInt(userCountResult.rows ? userCountResult.rows[0].count : userCountResult[0].count, 10);
+      if (userCount === 0) {
         console.log('[DatabaseInit] Seeding default admin user...');
-        // username: admin, password: admin123
         const hashedAdminPassword = '$2b$10$MbriuN.XyYYFbmf4W.VrKuUKS7FjaGe6sfRJTPZHo.v/3ntL.hKtW';
         await this.db.execute(sql`
           INSERT INTO users (username, password, role)
           VALUES ('admin', ${hashedAdminPassword}, 'admin');
         `);
-        console.log('[DatabaseInit] Default admin user seeded.');
       }
 
       console.log('[DatabaseInit] Database initialization complete.');

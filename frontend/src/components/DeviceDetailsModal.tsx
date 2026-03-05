@@ -29,12 +29,10 @@ interface DeviceDetailsModalProps {
   realTimeData?: any | null;
 }
 
-// Sub-component to handle the "locked tooltip" logic for each chart
 const LiveLineChart = ({ data, field, color, unit, displayName, isReallyDark, contrastColor }: any) => {
   const chartRef = useRef<any>(null);
   const mousePosRef = useRef<{ x: number; y: number } | null>(null);
 
-  // Re-trigger tooltip whenever data updates to keep it "locked" under the cursor
   useEffect(() => {
     if (chartRef.current && mousePosRef.current) {
       const { x, y } = mousePosRef.current;
@@ -49,39 +47,25 @@ const LiveLineChart = ({ data, field, color, unit, displayName, isReallyDark, co
 
   const config = {
     data,
-    xField: (d: any) => new Date(d._time || d.timestamp),
+    xField: (d: any) => new Date(d._time),
     yField: field,
     paddingLeft: 60,
     paddingRight: 20,
     theme: isReallyDark ? 'dark' : 'light',
-    scale: {
-      x: { type: 'time' },
-    },
+    scale: { x: { type: 'time' } },
     axis: {
       x: {
-        title: {
-          text: 'Time',
-          style: { fill: contrastColor, fillOpacity: 1, fontWeight: 'bold' }
-        },
-        label: {
-          style: { fill: contrastColor, fillOpacity: 1 },
-          formatter: (v: any) => dayjs(v).format('HH:mm:ss'),
-          autoHide: true,
-        },
+        title: { text: 'Time', style: { fill: contrastColor, fillOpacity: 1, fontWeight: 'bold' } },
+        label: { style: { fill: contrastColor, fillOpacity: 1 }, formatter: (v: any) => dayjs(v).format('HH:mm:ss'), autoHide: true },
         tickCount: 5,
       },
       y: {
-        title: {
-          text: `${displayName} (${unit})`,
-          style: { fill: contrastColor, fillOpacity: 1, fontWeight: 'bold' }
-        },
-        label: {
-          style: { fill: contrastColor, fillOpacity: 1 }
-        },
+        title: { text: `${displayName} (${unit})`, style: { fill: contrastColor, fillOpacity: 1, fontWeight: 'bold' } },
+        label: { style: { fill: contrastColor, fillOpacity: 1 } },
       },
     },
     tooltip: {
-      title: (d: any) => dayjs(d._time || d.timestamp).format('YYYY-MM-DD HH:mm:ss'),
+      title: (d: any) => dayjs(d._time).format('YYYY-MM-DD HH:mm:ss'),
       items: [{ channel: 'y', name: displayName, valueFormatter: (v: number) => `${Number(v).toFixed(2)} ${unit}` }],
       trigger: 'axis',
       shared: true,
@@ -94,12 +78,8 @@ const LiveLineChart = ({ data, field, color, unit, displayName, isReallyDark, co
     animate: false,
     onReady: (plot: any) => {
       chartRef.current = plot;
-      plot.on('pointermove', (ev: any) => {
-        mousePosRef.current = { x: ev.x, y: ev.y };
-      });
-      plot.on('pointerleave', () => {
-        mousePosRef.current = null;
-      });
+      plot.on('pointermove', (ev: any) => { mousePosRef.current = { x: ev.x, y: ev.y }; });
+      plot.on('pointerleave', () => { mousePosRef.current = null; });
     },
   };
 
@@ -115,7 +95,6 @@ export const DeviceDetailsModal: React.FC<DeviceDetailsModalProps> = ({ device, 
   const [loading, setLoading] = useState(false);
   const [range, setRange] = useState('1h');
 
-  // Load initial history
   useEffect(() => {
     if (device && open) {
       setLoading(true);
@@ -128,10 +107,11 @@ export const DeviceDetailsModal: React.FC<DeviceDetailsModalProps> = ({ device, 
           console.error("Failed to fetch history", err);
           setLoading(false);
         });
+    } else if (!open) {
+      setHistory([]);
     }
   }, [device, open, range]);
 
-  // Live update
   useEffect(() => {
     if (open && realTimeData && realTimeData.status === 'online') {
       const newDataPoint: HistoryData = {
@@ -189,30 +169,12 @@ export const DeviceDetailsModal: React.FC<DeviceDetailsModalProps> = ({ device, 
       ) : (
         <div style={{ padding: '0 24px' }}>
           <Row gutter={[16, 32]}>
-            <Col span={12}>
-              <Text strong style={{ display: 'block', marginBottom: 8 }}>Voltage (V)</Text>
-              <LiveLineChart data={history} field="voltage" color="#1668dc" unit="V" displayName="Voltage" isReallyDark={isReallyDark} contrastColor={contrastColor} />
-            </Col>
-            <Col span={12}>
-              <Text strong style={{ display: 'block', marginBottom: 8 }}>Current (A)</Text>
-              <LiveLineChart data={history} field="current" color="#d89614" unit="A" displayName="Current" isReallyDark={isReallyDark} contrastColor={contrastColor} />
-            </Col>
-            <Col span={12}>
-              <Text strong style={{ display: 'block', marginBottom: 8 }}>Active Power (kW)</Text>
-              <LiveLineChart data={history} field="activePower" color="#49aa19" unit="kW" displayName="Active Power" isReallyDark={isReallyDark} contrastColor={contrastColor} />
-            </Col>
-            <Col span={12}>
-              <Text strong style={{ display: 'block', marginBottom: 8 }}>Reactive Power (kVAR)</Text>
-              <LiveLineChart data={history} field="reactivePower" color="#eb2f96" unit="kVAR" displayName="Reactive Power" isReallyDark={isReallyDark} contrastColor={contrastColor} />
-            </Col>
-            <Col span={12}>
-              <Text strong style={{ display: 'block', marginBottom: 8 }}>Apparent Power (kVA)</Text>
-              <LiveLineChart data={history} field="apparentPower" color="#722ed1" unit="kVA" displayName="Apparent Power" isReallyDark={isReallyDark} contrastColor={contrastColor} />
-            </Col>
-            <Col span={12}>
-              <Text strong style={{ display: 'block', marginBottom: 8 }}>Power Factor</Text>
-              <LiveLineChart data={history} field="powerFactor" color="#13c2c2" unit="" displayName="Power Factor" isReallyDark={isReallyDark} contrastColor={contrastColor} />
-            </Col>
+            <Col span={12}><Text strong style={{ display: 'block', marginBottom: 8 }}>Voltage (V)</Text><LiveLineChart data={history} field="voltage" color="#1668dc" unit="V" displayName="Voltage" isReallyDark={isReallyDark} contrastColor={contrastColor} /></Col>
+            <Col span={12}><Text strong style={{ display: 'block', marginBottom: 8 }}>Current (A)</Text><LiveLineChart data={history} field="current" color="#d89614" unit="A" displayName="Current" isReallyDark={isReallyDark} contrastColor={contrastColor} /></Col>
+            <Col span={12}><Text strong style={{ display: 'block', marginBottom: 8 }}>Active Power (kW)</Text><LiveLineChart data={history} field="activePower" color="#49aa19" unit="kW" displayName="Active Power" isReallyDark={isReallyDark} contrastColor={contrastColor} /></Col>
+            <Col span={12}><Text strong style={{ display: 'block', marginBottom: 8 }}>Reactive Power (kVAR)</Text><LiveLineChart data={history} field="reactivePower" color="#eb2f96" unit="kVAR" displayName="Reactive Power" isReallyDark={isReallyDark} contrastColor={contrastColor} /></Col>
+            <Col span={12}><Text strong style={{ display: 'block', marginBottom: 8 }}>Apparent Power (kVA)</Text><LiveLineChart data={history} field="apparentPower" color="#722ed1" unit="kVA" displayName="Apparent Power" isReallyDark={isReallyDark} contrastColor={contrastColor} /></Col>
+            <Col span={12}><Text strong style={{ display: 'block', marginBottom: 8 }}>Power Factor</Text><LiveLineChart data={history} field="powerFactor" color="#13c2c2" unit="" displayName="Power Factor" isReallyDark={isReallyDark} contrastColor={contrastColor} /></Col>
           </Row>
         </div>
       )}

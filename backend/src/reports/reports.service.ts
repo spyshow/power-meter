@@ -10,15 +10,28 @@ import * as puppeteer from 'puppeteer';
 export interface ReportParams {
   deviceIds: string[];
   metrics: string[];
-  range?: string; // e.g. '1h', '6h', '24h', '6d'
-  start?: string; // ISO string
-  stop?: string;  // ISO string
+  range?: string;
+  start?: string;
+  stop?: string;
   granularity: 'raw' | 'aggregated';
 }
 
 @Injectable()
 export class ReportsService {
   constructor(@Inject(DRIZZLE_PROVIDER) private db: any) {}
+
+  private mapMetricToColumn(metric: string): string {
+    const mapping: Record<string, string> = {
+      voltage: 'voltage',
+      current: 'current',
+      activePower: 'active_power',
+      reactivePower: 'reactive_power',
+      apparentPower: 'apparent_power',
+      powerFactor: 'power_factor',
+      kva: 'apparent_power',
+    };
+    return mapping[metric] || metric;
+  }
 
   async getReportData(params: ReportParams): Promise<any[]> {
     let startTime: Date;
@@ -37,15 +50,14 @@ export class ReportsService {
         else if (unit === 'd') startTime.setDate(endTime.getDate() - value);
         else if (unit === 'w') startTime.setDate(endTime.getDate() - value * 7);
       } else {
-        startTime = new Date(endTime.getTime() - 3600000); // 1h default
+        startTime = new Date(endTime.getTime() - 3600000);
       }
     } else {
-      startTime = new Date(endTime.getTime() - 3600000); // 1h default
+      startTime = new Date(endTime.getTime() - 3600000);
     }
 
     const deviceIds = params.deviceIds.map(id => parseInt(id));
-    const metrics = params.metrics; // voltage, current, active_power, etc.
-
+    const metrics = params.metrics;
     const startStr = startTime.toISOString();
     const endStr = endTime.toISOString();
 
@@ -66,20 +78,18 @@ export class ReportsService {
       const result = await this.db.execute(query);
       return result.rows || result;
     } else {
-      // Aggregated (TimeScaleDB time_bucket)
       let interval = '1 minute';
       if (params.range === '6d') interval = '1 hour';
       else if (params.range === '24h') interval = '10 minutes';
       else if (params.range === '6h') interval = '5 minutes';
 
-      const binnedSelect = metrics.map(m => `AVG(${this.mapMetricToColumn(m)}) as avg_${m}`).join(', ');
-      const finalSelect = metrics.map(m => `ROUND(CAST(avg_${m} AS numeric), 2) as "${m}"`).join(', ');
+      const binnedSelect = metrics.map(m => `AVG(${this.mapMetricToColumn(m)}) as "${m}"`).join(', ');
 
       const query = sql`
         SELECT
           device_id,
           time_bucket(${sql.raw(`'${interval}'`)}, timestamp) AS timestamp,
-          ${sql.raw(finalSelect)}
+          ${sql.raw(binnedSelect)}
         FROM telemetry
         WHERE device_id IN (${sql.join(deviceIds, sql`, `)})
           AND timestamp >= ${startStr}
@@ -88,28 +98,22 @@ export class ReportsService {
         ORDER BY timestamp ASC
       `;
       const result = await this.db.execute(query);
-      return result.rows || result;
+      const rows = result.rows || result;
+      return rows.map((r: any) => {
+        const row: any = { ...r };
+        // Ensure all metrics are numbers
+        metrics.forEach(m => {
+          if (row[m] !== undefined) row[m] = parseFloat(row[m]);
+        });
+        return row;
+      });
     }
-  }
-
-  private mapMetricToColumn(metric: string): string {
-    const mapping: Record<string, string> = {
-      voltage: 'voltage',
-      current: 'current',
-      activePower: 'active_power',
-      reactivePower: 'reactive_power',
-      apparentPower: 'apparent_power',
-      powerFactor: 'power_factor',
-      kva: 'apparent_power', // Backward compatibility for any old requests
-    };
-    return mapping[metric] || metric;
   }
 
   async generateExcel(data: any[], fileName: string): Promise<string> {
     const workbook = new ExcelJS.Workbook();
     const devices = [...new Set(data.map((item) => item.device_id || item.deviceId || 'Unknown'))];
 
-    // 1. Create Summary Sheet
     const summarySheet = workbook.addWorksheet('Summary');
     summarySheet.columns = [
       { header: 'Device ID', key: 'deviceId', width: 15 },
@@ -122,7 +126,7 @@ export class ReportsService {
 
     const summaryData = devices.map((deviceId) => {
       const deviceData = data.filter((item) => (item.device_id || item.deviceId || 'Unknown') === deviceId);
-      const apparentValues = deviceData.map((d) => Number(d.apparentPower || d.kva) || 0).filter((v) => v > 0);
+      const apparentValues = deviceData.map((d) => Number(d.apparentPower) || 0).filter((v) => v > 0);
       return {
         deviceId,
         count: deviceData.length,
@@ -133,7 +137,6 @@ export class ReportsService {
 
     summarySheet.addRows(summaryData);
 
-    // 2. Generate Chart using Puppeteer
     const browser = await puppeteer.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
@@ -141,7 +144,6 @@ export class ReportsService {
 
     try {
       const page = await browser.newPage();
-
       const chartLabels = [...new Set(data.map((d) => new Date(d.timestamp).toISOString()))].sort();
       const datasets = devices.map((deviceId, index) => {
         const colors = ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)'];
@@ -149,7 +151,7 @@ export class ReportsService {
           label: `Device ${deviceId} (Apparent Power)`,
           data: chartLabels.map((time) => {
             const item = data.find((d) => new Date(d.timestamp).toISOString() === time && (d.device_id || d.deviceId || 'Unknown') === deviceId);
-            return item ? Number(item.apparentPower || item.kva) || 0 : null;
+            return item ? Number(item.apparentPower) || 0 : null;
           }),
           borderColor: colors[index % colors.length],
           fill: false,
@@ -196,7 +198,6 @@ export class ReportsService {
       await browser.close();
     }
 
-    // 3. Create Device Sheets
     if (data.length > 0) {
       for (const deviceId of devices) {
         const deviceData = data.filter((item) => (item.device_id || item.deviceId || 'Unknown') === deviceId);
@@ -217,13 +218,9 @@ export class ReportsService {
     }
 
     const reportsDir = path.join(process.cwd(), 'reports');
-    if (!fs.existsSync(reportsDir)) {
-      fs.mkdirSync(reportsDir, { recursive: true });
-    }
-
+    if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir, { recursive: true });
     const filePath = path.join(reportsDir, `${fileName}.xlsx`);
     await workbook.xlsx.writeFile(filePath);
-
     return filePath;
   }
 
@@ -235,11 +232,10 @@ export class ReportsService {
 
     try {
       const page = await browser.newPage();
-
       const devices = [...new Set(data.map((item) => item.device_id || item.deviceId || 'Unknown'))];
       const summary = devices.map((deviceId) => {
         const deviceData = data.filter((item) => (item.device_id || item.deviceId || 'Unknown') === deviceId);
-        const apparentValues = deviceData.map((d) => Number(d.apparentPower || d.kva) || 0).filter((v) => v > 0);
+        const apparentValues = deviceData.map((d) => Number(d.apparentPower) || 0).filter((v) => v > 0);
         return {
           deviceId,
           count: deviceData.length,
@@ -255,7 +251,7 @@ export class ReportsService {
           label: `Device ${deviceId} (Apparent Power)`,
           data: chartLabels.map((time) => {
             const item = data.find((d) => new Date(d.timestamp).toISOString() === time && (d.device_id || d.deviceId || 'Unknown') === deviceId);
-            return item ? Number(item.apparentPower || item.kva) || 0 : null;
+            return item ? Number(item.apparentPower) || 0 : null;
           }),
           borderColor: colors[index % colors.length],
           backgroundColor: colors[index % colors.length].replace('1)', '0.2)'),
@@ -298,7 +294,6 @@ export class ReportsService {
           <body>
             <h1>MCGI Power Logger: Performance Report</h1>
             <p style="text-align: center; color: #7f8c8d;">Generated on ${new Date().toLocaleString()} | File: ${fileName}</p>
-
             <div class="summary-container">
               ${summary.map((s) => `
                 <div class="summary-card">
@@ -309,11 +304,7 @@ export class ReportsService {
                 </div>
               `).join('')}
             </div>
-
-            <div class="chart-container">
-              <canvas id="trendChart"></canvas>
-            </div>
-
+            <div class="chart-container"><canvas id="trendChart"></canvas></div>
             <script>
               const ctx = document.getElementById('trendChart').getContext('2d');
               new Chart(ctx, {
@@ -337,33 +328,23 @@ export class ReportsService {
                 }
               });
             </script>
-
             <div class="page-break"></div>
             <h2>Detailed Telemetry Data</h2>
-            <table>
-              ${tableHeaders}
-              ${tableRows}
-            </table>
+            <table>${tableHeaders}${tableRows}</table>
           </body>
         </html>
       `;
 
       await page.setContent(html, { waitUntil: 'networkidle0' });
-
       const reportsDir = path.join(process.cwd(), 'reports');
-      if (!fs.existsSync(reportsDir)) {
-        fs.mkdirSync(reportsDir, { recursive: true });
-      }
-
+      if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir, { recursive: true });
       const filePath = path.join(reportsDir, `${fileName}.pdf`);
-
       await page.pdf({
         path: filePath,
         format: 'A4',
         margin: { top: '20mm', bottom: '20mm', left: '10mm', right: '10mm' },
         printBackground: true,
       });
-
       return filePath;
     } finally {
       await browser.close();

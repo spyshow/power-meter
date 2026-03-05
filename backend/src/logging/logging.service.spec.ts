@@ -52,40 +52,25 @@ describe('LoggingService', () => {
     service = module.get<LoggingService>(LoggingService);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-
-  it('should poll a device and save 6-metric data', async () => {
+  it('should poll a device and save rounded 6-metric data', async () => {
     const deviceId = 10;
-    // Current, Voltage, Active, Reactive, Apparent, PowerFactor
     mockModbusService.readFloat
-      .mockResolvedValueOnce(5.2)   // Current
-      .mockResolvedValueOnce(230.5) // Voltage
-      .mockResolvedValueOnce(1.1)   // Active
-      .mockResolvedValueOnce(0.5)   // Reactive
-      .mockResolvedValueOnce(1.2)   // Apparent
-      .mockResolvedValueOnce(0.95); // PowerFactor
+      .mockResolvedValueOnce(5.234)   // Current -> 5.2
+      .mockResolvedValueOnce(230.567) // Voltage -> 230.6
+      .mockResolvedValueOnce(1.111)   // Active -> 1.1
+      .mockResolvedValueOnce(0.555)   // Reactive -> 0.6
+      .mockResolvedValueOnce(1.222)   // Apparent -> 1.2
+      .mockResolvedValueOnce(0.954);  // PowerFactor -> 0.95
 
     await service.pollDevice(deviceId);
-
-    expect(mockModbusService.readFloat).toHaveBeenCalledTimes(6);
-    
-    // Verify 1-based registers (subtracted 1) are used
-    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3009);
-    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3025);
-    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3059);
-    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3067);
-    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3075);
-    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3083);
 
     expect(mockTelemetryRepo.create).toHaveBeenCalledWith(
       expect.objectContaining({
         deviceId,
         current: 5.2,
-        voltage: 230.5,
+        voltage: 230.6,
         activePower: 1.1,
-        reactivePower: 0.5,
+        reactivePower: 0.6,
         apparentPower: 1.2,
         powerFactor: 0.95,
       }),

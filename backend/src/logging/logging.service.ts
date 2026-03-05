@@ -24,7 +24,8 @@ export class LoggingService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    this.startLogging();
+    console.log('[LoggingService] Waiting 5s for DB init before starting polling...');
+    setTimeout(() => this.startLogging(), 5000);
   }
 
   async startLogging() {
@@ -34,7 +35,7 @@ export class LoggingService implements OnModuleInit {
         try {
           await this.pollDevice(id);
         } catch (error) {
-          // Error already handled in pollDevice or ModbusService
+          // Handled in pollDevice
         }
         await new Promise((resolve) => setTimeout(resolve, 50));
       }
@@ -44,14 +45,27 @@ export class LoggingService implements OnModuleInit {
     runLogging();
   }
 
+  private round(val: number, decimals: number = 1): number {
+    const factor = Math.pow(10, decimals);
+    return Math.round(val * factor) / factor;
+  }
+
   async pollDevice(id: number) {
     try {
-      const current = await this.modbusService.readFloat(id, this.REG_CURRENT_AVG);
-      const voltage = await this.modbusService.readFloat(id, this.REG_VOLTAGE_LL_AVG);
-      const activePower = await this.modbusService.readFloat(id, this.REG_ACTIVE_POWER_TOT);
-      const reactivePower = await this.modbusService.readFloat(id, this.REG_REACTIVE_POWER_TOT);
-      const apparentPower = await this.modbusService.readFloat(id, this.REG_APPARENT_POWER_TOT);
-      const powerFactor = await this.modbusService.readFloat(id, this.REG_POWER_FACTOR_TOT);
+      const currentRaw = await this.modbusService.readFloat(id, this.REG_CURRENT_AVG);
+      const voltageRaw = await this.modbusService.readFloat(id, this.REG_VOLTAGE_LL_AVG);
+      const activePowerRaw = await this.modbusService.readFloat(id, this.REG_ACTIVE_POWER_TOT);
+      const reactivePowerRaw = await this.modbusService.readFloat(id, this.REG_REACTIVE_POWER_TOT);
+      const apparentPowerRaw = await this.modbusService.readFloat(id, this.REG_APPARENT_POWER_TOT);
+      const powerFactorRaw = await this.modbusService.readFloat(id, this.REG_POWER_FACTOR_TOT);
+
+      // Round values: PF to 2 decimals, others to 1
+      const current = this.round(currentRaw, 1);
+      const voltage = this.round(voltageRaw, 1);
+      const activePower = this.round(activePowerRaw, 1);
+      const reactivePower = this.round(reactivePowerRaw, 1);
+      const apparentPower = this.round(apparentPowerRaw, 1);
+      const powerFactor = this.round(powerFactorRaw, 2);
 
       await this.telemetryRepo.create({
         deviceId: id,
@@ -71,7 +85,7 @@ export class LoggingService implements OnModuleInit {
       await this.peakService.checkPeak(id, 'apparentPower', apparentPower);
       await this.peakService.checkPeak(id, 'powerFactor', powerFactor);
 
-      // Emit event for real-time UI
+      // Emit event
       this.eventEmitter.emit('device.update', {
         id,
         current,
@@ -83,15 +97,8 @@ export class LoggingService implements OnModuleInit {
         status: 'online',
       });
     } catch (error) {
-      // Log error but don't crash
       console.error(`[LoggingService] Failed to poll device ${id}:`, error.message);
-
-      // Emit offline status
-      this.eventEmitter.emit('device.update', {
-        id,
-        status: 'offline',
-      });
-
+      this.eventEmitter.emit('device.update', { id, status: 'offline' });
       throw error;
     }
   }

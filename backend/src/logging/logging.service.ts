@@ -8,10 +8,13 @@ import { PeakService } from '../peaks/peak.service';
 export class LoggingService implements OnModuleInit {
   private readonly DEVICE_IDS = [10, 20, 30, 40, 50, 60];
   
-  // PM5310 Register addresses
-  private readonly REG_CURRENT_AVG = 3000 - 1;
-  private readonly REG_VOLTAGE_LL_AVG = 3028 - 1;
-  private readonly REG_KVA_TOT = 3060 - 1;
+  // PM5310 Register addresses (0-based)
+  private readonly REG_CURRENT_AVG = 3010;
+  private readonly REG_VOLTAGE_LL_AVG = 3026;
+  private readonly REG_ACTIVE_POWER_TOT = 3060;
+  private readonly REG_REACTIVE_POWER_TOT = 3068;
+  private readonly REG_APPARENT_POWER_TOT = 3076;
+  private readonly REG_POWER_FACTOR_TOT = 3084;
 
   constructor(
     private modbusService: ModbusService,
@@ -43,40 +46,52 @@ export class LoggingService implements OnModuleInit {
 
   async pollDevice(id: number) {
     try {
-      const voltage = await this.modbusService.readFloat(id, this.REG_VOLTAGE_LL_AVG);
       const current = await this.modbusService.readFloat(id, this.REG_CURRENT_AVG);
-      const kva = await this.modbusService.readFloat(id, this.REG_KVA_TOT);
+      const voltage = await this.modbusService.readFloat(id, this.REG_VOLTAGE_LL_AVG);
+      const activePower = await this.modbusService.readFloat(id, this.REG_ACTIVE_POWER_TOT);
+      const reactivePower = await this.modbusService.readFloat(id, this.REG_REACTIVE_POWER_TOT);
+      const apparentPower = await this.modbusService.readFloat(id, this.REG_APPARENT_POWER_TOT);
+      const powerFactor = await this.modbusService.readFloat(id, this.REG_POWER_FACTOR_TOT);
 
       await this.telemetryRepo.create({
         deviceId: id,
-        voltage,
         current,
-        kva,
+        voltage,
+        activePower,
+        reactivePower,
+        apparentPower,
+        powerFactor,
       });
 
       // Check peaks
-      await this.peakService.checkPeak(id, 'voltage', voltage);
       await this.peakService.checkPeak(id, 'current', current);
-      await this.peakService.checkPeak(id, 'kva', kva);
+      await this.peakService.checkPeak(id, 'voltage', voltage);
+      await this.peakService.checkPeak(id, 'activePower', activePower);
+      await this.peakService.checkPeak(id, 'reactivePower', reactivePower);
+      await this.peakService.checkPeak(id, 'apparentPower', apparentPower);
+      await this.peakService.checkPeak(id, 'powerFactor', powerFactor);
 
       // Emit event for real-time UI
       this.eventEmitter.emit('device.update', {
         id,
-        voltage,
         current,
-        kva,
+        voltage,
+        activePower,
+        reactivePower,
+        apparentPower,
+        powerFactor,
         status: 'online',
       });
     } catch (error) {
       // Log error but don't crash
       console.error(`[LoggingService] Failed to poll device ${id}:`, error.message);
-      
+
       // Emit offline status
       this.eventEmitter.emit('device.update', {
         id,
         status: 'offline',
       });
-      
+
       throw error;
     }
   }

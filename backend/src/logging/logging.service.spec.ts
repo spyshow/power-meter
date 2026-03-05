@@ -56,19 +56,38 @@ describe('LoggingService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should poll a device and save data', async () => {
+  it('should poll a device and save 6-metric data', async () => {
     const deviceId = 10;
-    mockModbusService.readFloat.mockResolvedValueOnce(230).mockResolvedValueOnce(5).mockResolvedValueOnce(1.1);
+    // Current, Voltage, Active, Reactive, Apparent, PowerFactor
+    mockModbusService.readFloat
+      .mockResolvedValueOnce(5.2)   // Current
+      .mockResolvedValueOnce(230.5) // Voltage
+      .mockResolvedValueOnce(1.1)   // Active
+      .mockResolvedValueOnce(0.5)   // Reactive
+      .mockResolvedValueOnce(1.2)   // Apparent
+      .mockResolvedValueOnce(0.95); // PowerFactor
 
     await service.pollDevice(deviceId);
 
-    expect(mockModbusService.readFloat).toHaveBeenCalledTimes(3);
+    expect(mockModbusService.readFloat).toHaveBeenCalledTimes(6);
+    
+    // Verify correct 0-based addresses are used
+    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3010);
+    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3026);
+    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3060);
+    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3068);
+    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3076);
+    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3084);
+
     expect(mockTelemetryRepo.create).toHaveBeenCalledWith(
       expect.objectContaining({
         deviceId,
-        voltage: 230,
-        current: 5,
-        kva: 1.1,
+        current: 5.2,
+        voltage: 230.5,
+        activePower: 1.1,
+        reactivePower: 0.5,
+        apparentPower: 1.2,
+        powerFactor: 0.95,
       }),
     );
   });

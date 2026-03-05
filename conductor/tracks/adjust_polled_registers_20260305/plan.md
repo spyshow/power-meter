@@ -41,8 +41,8 @@ Update the dashboard and charts to display the new data.
 - [x] Task: Conductor - User Manual Verification 'Phase 3: Frontend UI' (Protocol in workflow.md) [7e27840]
 
 ## Phase 4: System Integration & Cleanup
-- [ ] Task: Clear Legacy Telemetry Data
+- [x] Task: Clear Legacy Telemetry Data
     - [ ] Perform a one-time database reset/cleanup to ensure data consistency
-- [ ] Task: Final System E2E Check
+- [~] Task: Final System E2E Check
     - [ ] Verify end-to-end flow: Polling -> DB -> Dashboard -> Reports
 - [ ] Task: Conductor - User Manual Verification 'Phase 4: Final Integration' (Protocol in workflow.md)

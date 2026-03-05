@@ -16,16 +16,16 @@ describe('DeviceCard', () => {
       status: 'online' as const
     };
 
-    const { container } = render(<DeviceCard {...props} />);
+    render(<DeviceCard {...props} />);
     expect(screen.getByText(/Device 10/i)).toBeInTheDocument();
 
-    // Check for labels
-    expect(screen.getByText(/Voltage/i)).toBeInTheDocument();
-    expect(screen.getByText(/Current/i)).toBeInTheDocument();
-    expect(screen.getByText(/Active P/i)).toBeInTheDocument();
-    expect(screen.getByText(/Reactive P/i)).toBeInTheDocument();
-    expect(screen.getByText(/Apparent P/i)).toBeInTheDocument();
-    expect(screen.getByText(/Power Factor/i)).toBeInTheDocument();
+    // Check for labels using exact text to avoid partial matches
+    expect(screen.getByText("Voltage")).toBeInTheDocument();
+    expect(screen.getByText("Current")).toBeInTheDocument();
+    expect(screen.getByText("Active P.")).toBeInTheDocument();
+    expect(screen.getByText("Reactive P.")).toBeInTheDocument();
+    expect(screen.getByText("Apparent P.")).toBeInTheDocument();
+    expect(screen.getByText("Power Factor")).toBeInTheDocument();
 
     expect(screen.getByText(/ONLINE/i)).toBeInTheDocument();
   });

@@ -33,7 +33,10 @@ describe('useRealTimeData', () => {
       id: 10,
       voltage: 0,
       current: 0,
-      kva: 0,
+      activePower: 0,
+      reactivePower: 0,
+      apparentPower: 0,
+      powerFactor: 0,
       status: 'offline',
       lastUpdate: 0,
     });
@@ -41,23 +44,33 @@ describe('useRealTimeData', () => {
 
   it('updates state when receiving a message', () => {
     const { result } = renderHook(() => useRealTimeData(initialDevices));
-    
+
     act(() => {
       mockEventSourceInstance.onmessage!({
-        data: JSON.stringify({ type: 'update', id: 10, voltage: 230, current: 5, kva: 1.15 }),
+        data: JSON.stringify({ 
+          type: 'update', 
+          id: 10, 
+          voltage: 230, 
+          current: 5, 
+          activePower: 1.1,
+          reactivePower: 0.5,
+          apparentPower: 1.2,
+          powerFactor: 0.95
+        }),
       } as MessageEvent);
     });
 
     expect(result.current[10].voltage).toBe(230);
+    expect(result.current[10].activePower).toBe(1.1);
     expect(result.current[10].status).toBe('online');
   });
 
   it('marks device as offline after timeout', () => {
     const { result } = renderHook(() => useRealTimeData(initialDevices));
-    
+
     act(() => {
       mockEventSourceInstance.onmessage!({
-        data: JSON.stringify({ type: 'update', id: 10, voltage: 230, current: 5, kva: 1.15 }),
+        data: JSON.stringify({ type: 'update', id: 10, voltage: 230, current: 5, activePower: 1.1 }),
       } as MessageEvent);
     });
 

@@ -61,7 +61,7 @@ export class TelemetryRepository {
       return results.rows || results;
     }
 
-    return await this.db.execute(sql`
+    const results = await this.db.execute(sql`
       SELECT
         time_bucket(${sql.raw(`'${interval}'`)}, timestamp) AS timestamp,
         AVG(voltage) as voltage,
@@ -75,5 +75,6 @@ export class TelemetryRepository {
       GROUP BY timestamp
       ORDER BY timestamp ASC
     `);
+    return results.rows || results;
   }
 }

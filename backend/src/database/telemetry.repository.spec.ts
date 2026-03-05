@@ -8,13 +8,6 @@ describe('TelemetryRepository', () => {
 
   beforeEach(async () => {
     mockDb = {
-      insert: jest.fn().mockReturnThis(),
-      values: jest.fn().mockReturnThis(),
-      select: jest.fn().mockReturnThis(),
-      from: jest.fn().mockReturnThis(),
-      where: jest.fn().mockReturnThis(),
-      orderBy: jest.fn().mockReturnThis(),
-      limit: jest.fn().mockReturnThis(),
       execute: jest.fn(),
     };
 
@@ -46,55 +39,54 @@ describe('TelemetryRepository', () => {
       powerFactor: 0.95,
     };
 
+    mockDb.execute.mockResolvedValue({ rows: [] });
+
     await repository.create(data);
 
-    expect(mockDb.insert).toHaveBeenCalled();
-    expect(mockDb.values).toHaveBeenCalledWith(expect.objectContaining(data));
+    expect(mockDb.execute).toHaveBeenCalled();
   });
 
   it('should query latest telemetry for a device', async () => {
     const deviceId = 10;
-    mockDb.limit.mockResolvedValue([{ deviceId, voltage: 230 }]);
+    mockDb.execute.mockResolvedValue({ rows: [{ device_id: deviceId, voltage: 230 }] });
 
     const result = await repository.getLatest(deviceId);
 
-    expect(mockDb.select).toHaveBeenCalled();
-    expect(mockDb.from).toHaveBeenCalled();
-    expect(mockDb.where).toHaveBeenCalled();
+    expect(mockDb.execute).toHaveBeenCalled();
     expect(result).toBeDefined();
+    expect(result.device_id).toBe(deviceId);
   });
 
   it('should query history for a device', async () => {
     const deviceId = 10;
     const startTime = new Date();
-    mockDb.orderBy.mockResolvedValue([{ deviceId, voltage: 230 }]);
+    mockDb.execute.mockResolvedValue({ rows: [{ device_id: deviceId, voltage: 230 }] });
 
     const result = await repository.getHistory(deviceId, startTime);
 
-    expect(mockDb.select).toHaveBeenCalled();
-    expect(mockDb.from).toHaveBeenCalled();
-    expect(mockDb.where).toHaveBeenCalled();
+    expect(mockDb.execute).toHaveBeenCalled();
     expect(result).toBeDefined();
+    expect(Array.isArray(result)).toBe(true);
   });
 
   it('should query history with aggregation', async () => {
     const deviceId = 10;
     const startTime = new Date();
     const interval = '1h';
-    mockDb.execute.mockResolvedValue([{ 
+    mockDb.execute.mockResolvedValue({ rows: [{ 
       timestamp: new Date(), 
       voltage: 230, 
       current: 5, 
-      activePower: 1, 
-      reactivePower: 0.5, 
-      apparentPower: 1.1, 
-      powerFactor: 0.9 
-    }]);
+      active_power: 1, 
+      reactive_power: 0.5, 
+      apparent_power: 1.1, 
+      power_factor: 0.9 
+    }] });
 
     const result = await repository.getHistory(deviceId, startTime, interval);
 
     expect(mockDb.execute).toHaveBeenCalled();
     expect(result).toBeDefined();
-    expect(result[0]).toHaveProperty('activePower');
+    expect(result[0]).toHaveProperty('active_power');
   });
 });

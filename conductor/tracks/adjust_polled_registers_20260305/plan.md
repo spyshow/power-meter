@@ -9,7 +9,7 @@ Update the data model and polling engine to support 6 metrics.
 - [x] Task: Update Telemetry Repository [TDD] [07af54b]
     - [ ] Write failing tests for creating and retrieving 6-metric telemetry
     - [ ] Update TelemetryRepository.create and getHistory aggregation logic
-- [ ] Task: Update Modbus Polling Logic [TDD]
+- [x] Task: Update Modbus Polling Logic [TDD] [c75ca48]
     - [ ] Write tests for LoggingService using the new 0-based registers
     - [ ] Implement new register addresses in LoggingService and update pollDevice
 - [ ] Task: Update Peak Tracking Service [TDD]

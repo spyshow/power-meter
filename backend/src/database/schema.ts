@@ -6,7 +6,10 @@ export const telemetry = pgTable('telemetry', {
   deviceId: integer('device_id').notNull(),
   voltage: doublePrecision('voltage'),
   current: doublePrecision('current'),
-  kva: doublePrecision('kva'),
+  activePower: doublePrecision('active_power'),
+  reactivePower: doublePrecision('reactive_power'),
+  apparentPower: doublePrecision('apparent_power'),
+  powerFactor: doublePrecision('power_factor'),
 });
 
 export const peaks = pgTable('peaks', {

@@ -28,7 +28,10 @@ export class DatabaseInitService implements OnModuleInit {
           device_id INTEGER NOT NULL,
           voltage DOUBLE PRECISION,
           current DOUBLE PRECISION,
-          kva DOUBLE PRECISION,
+          active_power DOUBLE PRECISION,
+          reactive_power DOUBLE PRECISION,
+          apparent_power DOUBLE PRECISION,
+          power_factor DOUBLE PRECISION,
           PRIMARY KEY (id, timestamp)
         );
       `);
@@ -36,7 +39,7 @@ export class DatabaseInitService implements OnModuleInit {
       // 3. Convert to hypertable if not already
       try {
         await this.db.execute(sql`
-          SELECT create_hypertable('telemetry', 'timestamp', if_not_exists => TRUE);
+          SELECT create_hypertable('telemetry', 'timestamp', if_not_exists => TRUE);      
         `);
         console.log('[DatabaseInit] Telemetry hypertable verified/created.');
       } catch (err) {
@@ -90,7 +93,7 @@ export class DatabaseInitService implements OnModuleInit {
         // username: admin, password: admin123
         const hashedAdminPassword = '$2b$10$MbriuN.XyYYFbmf4W.VrKuUKS7FjaGe6sfRJTPZHo.v/3ntL.hKtW';
         await this.db.execute(sql`
-          INSERT INTO users (username, password, role) 
+          INSERT INTO users (username, password, role)
           VALUES ('admin', ${hashedAdminPassword}, 'admin');
         `);
         console.log('[DatabaseInit] Default admin user seeded.');
@@ -98,7 +101,7 @@ export class DatabaseInitService implements OnModuleInit {
 
       console.log('[DatabaseInit] Database initialization complete.');
     } catch (error) {
-      console.error('[DatabaseInit] Error during database initialization:', error);
+      console.error('[DatabaseInit] Error during database initialization:', error);       
     }
   }
 }

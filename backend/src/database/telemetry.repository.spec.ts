@@ -15,6 +15,7 @@ describe('TelemetryRepository', () => {
       where: jest.fn().mockReturnThis(),
       orderBy: jest.fn().mockReturnThis(),
       limit: jest.fn().mockReturnThis(),
+      execute: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -74,5 +75,26 @@ describe('TelemetryRepository', () => {
     expect(mockDb.from).toHaveBeenCalled();
     expect(mockDb.where).toHaveBeenCalled();
     expect(result).toBeDefined();
+  });
+
+  it('should query history with aggregation', async () => {
+    const deviceId = 10;
+    const startTime = new Date();
+    const interval = '1h';
+    mockDb.execute.mockResolvedValue([{ 
+      timestamp: new Date(), 
+      voltage: 230, 
+      current: 5, 
+      activePower: 1, 
+      reactivePower: 0.5, 
+      apparentPower: 1.1, 
+      powerFactor: 0.9 
+    }]);
+
+    const result = await repository.getHistory(deviceId, startTime, interval);
+
+    expect(mockDb.execute).toHaveBeenCalled();
+    expect(result).toBeDefined();
+    expect(result[0]).toHaveProperty('activePower');
   });
 });

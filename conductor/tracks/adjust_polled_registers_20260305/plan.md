@@ -20,10 +20,10 @@ Update the data model and polling engine to support 6 metrics.
 ## Phase 2: Reporting Engine Adaptation (TDD)
 Ensure reports correctly reflect the expanded data set.
 
-- [ ] Task: Update Reports Generation Logic [TDD]
+- [x] Task: Update Reports Generation Logic [TDD] [43391bc]
     - [ ] Write tests for PDF/Excel generation with 6 columns
     - [ ] Update ReportsService to include new metrics in fixed column reports
-- [ ] Task: Verify Scheduler Compatibility
+- [x] Task: Verify Scheduler Compatibility [43391bc]
     - [ ] Ensure automated reports process the new telemetry structure without errors
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Reporting' (Protocol in workflow.md)
 

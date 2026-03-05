@@ -4,7 +4,10 @@ export interface DeviceData {
   id: number;
   voltage: number;
   current: number;
-  kva: number;
+  activePower: number;
+  reactivePower: number;
+  apparentPower: number;
+  powerFactor: number;
   status: 'online' | 'offline';
   lastUpdate: number;
 }
@@ -17,7 +20,10 @@ export const useRealTimeData = (initialDevices: { id: number; name: string }[]) 
         id: device.id,
         voltage: 0,
         current: 0,
-        kva: 0,
+        activePower: 0,
+        reactivePower: 0,
+        apparentPower: 0,
+        powerFactor: 0,
         status: 'offline',
         lastUpdate: 0,
       }
@@ -53,17 +59,16 @@ export const useRealTimeData = (initialDevices: { id: number; name: string }[]) 
     };
 
     eventSource.onerror = () => {
-      // If SSE disconnects, we keep the last data but the offline detection will eventually kick in
+      // If SSE disconnects, we keep the last data
     };
 
-    // Offline detection (client-side safety net)
+    // Offline detection
     const interval = setInterval(() => {
       const now = Date.now();
       setData((prev) => {
         const next = { ...prev };
         let changed = false;
         for (const id in next) {
-          // If we haven't heard from the device in 10 seconds, mark as offline
           if (next[id].status === 'online' && now - next[id].lastUpdate > 10000) {
             next[id].status = 'offline';
             changed = true;

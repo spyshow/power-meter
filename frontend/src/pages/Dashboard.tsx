@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Row, Col, Spin, Typography, Alert, Card, Space, Tag, theme } from 'antd';
+import { Row, Col, Spin, Typography, Alert, Space, Tag, theme } from 'antd';
 import axios from 'axios';
 import { DeviceCard } from '../components/DeviceCard';
 import { DeviceDetailsModal } from '../components/DeviceDetailsModal';
@@ -45,10 +45,10 @@ export const Dashboard = () => {
 
   return (
     <div style={{ padding: '0 24px 24px 24px' }}>
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         marginBottom: 24,
         background: token.colorBgContainer,
         borderBottom: `1px solid ${token.colorBorderSecondary}`,
@@ -67,30 +67,33 @@ export const Dashboard = () => {
           <Tag color="green">SYSTEM LIVE</Tag>
         </Space>
       </div>
-      
+
       {error && (
-        <Alert 
-          message="Communication Error" 
-          description={error} 
-          type="error" 
-          showIcon 
-          closable 
-          style={{ marginBottom: 24 }} 
+        <Alert
+          message="Communication Error"
+          description={error}
+          type="error"
+          showIcon
+          closable
+          style={{ marginBottom: 24 }}
         />
       )}
 
       <Row gutter={[20, 20]}>
         {devices.map((device) => {
-          const deviceData = realTimeData[device.id];
+          const d = realTimeData[device.id];
           return (
             <Col key={device.id} xs={24} sm={12} md={12} lg={8} xl={6}>
               <DeviceCard
                 id={device.id}
                 name={device.name}
-                voltage={deviceData?.voltage || 0}
-                current={deviceData?.current || 0}
-                kva={deviceData?.kva || 0}
-                status={deviceData?.status || 'offline'}
+                voltage={d?.voltage || 0}
+                current={d?.current || 0}
+                activePower={d?.activePower || 0}
+                reactivePower={d?.reactivePower || 0}
+                apparentPower={d?.apparentPower || 0}
+                powerFactor={d?.powerFactor || 0}
+                status={d?.status || 'offline'}
                 onClick={() => setSelectedDevice(device)}
               />
             </Col>

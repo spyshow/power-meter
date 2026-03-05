@@ -31,7 +31,7 @@ export const Reports: React.FC = () => {
   const handlePreview = async (values: any) => {
     setLoading(true);
     const { range, devices, metrics, granularity } = values;
-    
+
     const params: any = {
       deviceIds: devices,
       metrics: metrics,
@@ -85,7 +85,6 @@ export const Reports: React.FC = () => {
       params.range = '1h';
     }
 
-    // Since we need to download a file, we use fetch with the token
     const token = localStorage.getItem('token');
     const response = await fetch(`${apiUrl}/reports/download`, {
       method: 'POST',
@@ -112,7 +111,7 @@ export const Reports: React.FC = () => {
     { title: 'Device', dataIndex: 'device_id', key: 'device_id' },
     { title: 'Timestamp', dataIndex: 'timestamp', key: 'timestamp', render: (val: any) => dayjs(val).format('YYYY-MM-DD HH:mm:ss') },
     ...Object.keys(previewData[0])
-      .filter(k => !['device_id', 'timestamp', 'id', 'id'].includes(k))
+      .filter(k => !['device_id', 'timestamp', 'id'].includes(k))
       .map(key => ({
         title: key.toUpperCase(),
         dataIndex: key,
@@ -129,16 +128,16 @@ export const Reports: React.FC = () => {
           layout="vertical"
           initialValues={{
             granularity: 'aggregated',
-            metrics: ['kva'],
+            metrics: ['apparentPower'],
             devices: ['10']
           }}
           onFinish={handlePreview}
         >
           <Row gutter={24}>
             <Col span={8}>
-              <Form.Item 
-                name="devices" 
-                label="Select Devices" 
+              <Form.Item
+                name="devices"
+                label="Select Devices"
                 rules={[{ required: true, message: 'Please select at least one device' }]}
               >
                 <Select mode="multiple" placeholder="Select devices">
@@ -152,15 +151,18 @@ export const Reports: React.FC = () => {
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item 
-                name="metrics" 
-                label="Select Metrics" 
+              <Form.Item
+                name="metrics"
+                label="Select Metrics"
                 rules={[{ required: true, message: 'Please select metrics' }]}
               >
                 <Select mode="multiple" placeholder="Select metrics">
                   <Select.Option value="voltage">Voltage (V)</Select.Option>
                   <Select.Option value="current">Current (A)</Select.Option>
-                  <Select.Option value="kva">Power (kVA)</Select.Option>
+                  <Select.Option value="activePower">Active Power (kW)</Select.Option>
+                  <Select.Option value="reactivePower">Reactive Power (kVAR)</Select.Option>
+                  <Select.Option value="apparentPower">Apparent Power (kVA)</Select.Option>
+                  <Select.Option value="powerFactor">Power Factor</Select.Option>
                 </Select>
               </Form.Item>
             </Col>
@@ -182,22 +184,22 @@ export const Reports: React.FC = () => {
             </Col>
             <Col span={16} style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', paddingBottom: '24px' }}>
               <Space>
-                <Button 
-                  type="primary" 
-                  icon={<SearchOutlined />} 
+                <Button
+                  type="primary"
+                  icon={<SearchOutlined />}
                   htmlType="submit"
                   loading={loading}
                 >
                   Preview Data
                 </Button>
-                <Button 
-                  icon={<FilePdfOutlined />} 
+                <Button
+                  icon={<FilePdfOutlined />}
                   onClick={() => handleDownload('pdf')}
                 >
                   Export PDF
                 </Button>
-                <Button 
-                  icon={<FileExcelOutlined />} 
+                <Button
+                  icon={<FileExcelOutlined />}
                   onClick={() => handleDownload('xlsx')}
                 >
                   Export Excel
@@ -211,9 +213,9 @@ export const Reports: React.FC = () => {
       {previewData.length > 0 && (
         <div style={{ marginTop: '24px' }}>
           <Title level={4}>Data Preview (First 100 rows)</Title>
-          <Table 
-            dataSource={previewData.slice(0, 100)} 
-            columns={columns} 
+          <Table
+            dataSource={previewData.slice(0, 100)}
+            columns={columns}
             rowKey={(record: any) => `${record.device_id}-${record.timestamp}`}
             pagination={{ pageSize: 10 }}
             size="small"

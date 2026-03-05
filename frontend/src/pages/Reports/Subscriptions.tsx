@@ -122,3 +122,4 @@ export const ReportSubscriptions: React.FC = () => {
     </div>
   );
 };
+

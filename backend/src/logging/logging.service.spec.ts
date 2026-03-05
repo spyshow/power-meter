@@ -71,13 +71,13 @@ describe('LoggingService', () => {
 
     expect(mockModbusService.readFloat).toHaveBeenCalledTimes(6);
     
-    // Verify correct 0-based addresses are used
-    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3010);
-    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3026);
-    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3060);
-    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3068);
-    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3076);
-    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3084);
+    // Verify 1-based registers (subtracted 1) are used
+    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3009);
+    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3025);
+    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3059);
+    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3067);
+    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3075);
+    expect(mockModbusService.readFloat).toHaveBeenCalledWith(deviceId, 3083);
 
     expect(mockTelemetryRepo.create).toHaveBeenCalledWith(
       expect.objectContaining({

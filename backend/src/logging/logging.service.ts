@@ -8,13 +8,13 @@ import { PeakService } from '../peaks/peak.service';
 export class LoggingService implements OnModuleInit {
   private readonly DEVICE_IDS = [10, 20, 30, 40, 50, 60];
   
-  // PM5310 Register addresses (0-based)
-  private readonly REG_CURRENT_AVG = 3010;
-  private readonly REG_VOLTAGE_LL_AVG = 3026;
-  private readonly REG_ACTIVE_POWER_TOT = 3060;
-  private readonly REG_REACTIVE_POWER_TOT = 3068;
-  private readonly REG_APPARENT_POWER_TOT = 3076;
-  private readonly REG_POWER_FACTOR_TOT = 3084;
+  // PM5310 Register addresses (Converted to 0-based for Modbus library)
+  private readonly REG_CURRENT_AVG = 3010 - 1;
+  private readonly REG_VOLTAGE_LL_AVG = 3026 - 1;
+  private readonly REG_ACTIVE_POWER_TOT = 3060 - 1;
+  private readonly REG_REACTIVE_POWER_TOT = 3068 - 1;
+  private readonly REG_APPARENT_POWER_TOT = 3076 - 1;
+  private readonly REG_POWER_FACTOR_TOT = 3084 - 1;
 
   constructor(
     private modbusService: ModbusService,

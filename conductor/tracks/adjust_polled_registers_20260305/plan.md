@@ -12,7 +12,7 @@ Update the data model and polling engine to support 6 metrics.
 - [x] Task: Update Modbus Polling Logic [TDD] [c75ca48]
     - [ ] Write tests for LoggingService using the new 0-based registers
     - [ ] Implement new register addresses in LoggingService and update pollDevice
-- [ ] Task: Update Peak Tracking Service [TDD]
+- [x] Task: Update Peak Tracking Service [TDD] [c5cea78]
     - [ ] Write tests for multi-metric peak detection
     - [ ] Update PeakService to track peaks for all 6 metrics
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Backend Core' (Protocol in workflow.md)

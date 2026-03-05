@@ -40,9 +40,9 @@ Update the dashboard and charts to display the new data.
     - [ ] Update Peaks table to display 6 parameters
 - [x] Task: Conductor - User Manual Verification 'Phase 3: Frontend UI' (Protocol in workflow.md) [7e27840]
 
-## Phase 4: System Integration & Cleanup
+## Phase 4: System Integration & Cleanup [checkpoint: ad1858d]
 - [x] Task: Clear Legacy Telemetry Data
     - [ ] Perform a one-time database reset/cleanup to ensure data consistency
-- [~] Task: Final System E2E Check
+- [x] Task: Final System E2E Check [ad1858d]
     - [ ] Verify end-to-end flow: Polling -> DB -> Dashboard -> Reports
-- [ ] Task: Conductor - User Manual Verification 'Phase 4: Final Integration' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 4: Final Integration' (Protocol in workflow.md) [ad1858d]

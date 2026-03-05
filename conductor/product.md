@@ -5,7 +5,7 @@ i have 6 schnieder PM5310 connected via modbus to PAS600 and i am connected to t
 # Product Guide: MCGI Power Logger
 
 ## Vision
-A centralized web-based dashboard for monitoring and analyzing power consumption data from Schneider PM5310 meters. By providing real-time visibility into Voltage, Power (kVA), and Current (Amps), facility operators and energy managers can track usage trends and optimize energy efficiency.
+A centralized web-based dashboard for monitoring and analyzing power consumption data from Schneider PM5310 meters. By providing real-time visibility into Voltage, Current (Amps), and comprehensive Power metrics (Active, Reactive, Apparent Power, and Power Factor), facility operators and energy managers can track usage trends and optimize energy efficiency.
 
 ## Target Audience
 - **Facility Operators:** Monitor real-time consumption and ensure stable power supply.
@@ -17,7 +17,7 @@ A centralized web-based dashboard for monitoring and analyzing power consumption
 - **Simple Integration:** Seamless connectivity with Schneider PM5310 meters via Modbus TCP (PAS600 gateway).
 
 ## Key Features
-- **Device Dashboard:** Real-time display of Voltage, Current, and Power for 6 specific PM5310 devices.
+- **Device Dashboard:** Real-time display of 6 critical metrics (Voltage, Current, Active Power, Reactive Power, Apparent Power, and Power Factor) for 6 specific PM5310 devices.
 - **Data Logging:** Continuous recording of sensor data to a local TimescaleDB instance at 1-second intervals.
 - **Telemetry Trends:** Interactive, live-updating charts to visualize historical data with dynamic aggregation for performance.
 - **Peak Value Monitoring:** Dedicated analysis page tracking all-time maximum values for every device and metric with real-time updates.
@@ -40,3 +40,4 @@ A centralized web-based dashboard for monitoring and analyzing power consumption
     - Device 4000 (ID 40)
     - Device 5000 (ID 50)
     - Device 6000 (ID 60)
+

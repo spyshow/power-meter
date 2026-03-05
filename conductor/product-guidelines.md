@@ -18,7 +18,10 @@
 - **Metric Colors:** Consistent color coding for metrics:
     - **Voltage:** Blue (#1668dc)
     - **Current:** Gold (#d89614)
-    - **Power:** Green (#49aa19)
+    - **Active Power:** Green (#49aa19)
+    - **Reactive Power:** Pink (#eb2f96)
+    - **Apparent Power:** Purple (#722ed1)
+    - **Power Factor:** Cyan (#13c2c2)
 - **Alert Colors:** Standard traffic light system (Red for critical, Amber for warning, Green for normal).
 - **Typography:** Standard Ant Design typography (San Francisco / Roboto).
 
@@ -26,3 +29,4 @@
 - **Comments:** Comprehensive Docstrings required for all functions, classes, and modules.
 - **Structure:** Modular code organization.
 - **Naming:** CamelCase for variables/functions, PascalCase for classes (or language-specific standard).
+

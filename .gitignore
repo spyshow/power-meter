@@ -22,5 +22,5 @@ Thumbs.db
 coverage/
 
 # Reports
-reports/
-
+/reports/
+/backend/reports/

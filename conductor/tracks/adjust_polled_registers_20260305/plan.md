@@ -6,7 +6,7 @@ Update the data model and polling engine to support 6 metrics.
 - [x] Task: Update telemetry Table Schema [TDD] [7726d7b]
     - [ ] Write tests for new schema columns (active_power, reactive_power, apparent_power, power_factor)
     - [ ] Update backend/src/database/schema.ts and init.ts
-- [ ] Task: Update Telemetry Repository [TDD]
+- [x] Task: Update Telemetry Repository [TDD] [07af54b]
     - [ ] Write failing tests for creating and retrieving 6-metric telemetry
     - [ ] Update TelemetryRepository.create and getHistory aggregation logic
 - [ ] Task: Update Modbus Polling Logic [TDD]

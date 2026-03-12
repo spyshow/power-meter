@@ -32,7 +32,31 @@ export const useRealTimeData = (initialDevices: { id: number; name: string }[]) 
 
   useEffect(() => {
     if (initialDevices.length === 0) return;
+    
+    setData((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      initialDevices.forEach((device) => {
+        if (!next[device.id]) {
+          next[device.id] = {
+            id: device.id,
+            voltage: 0,
+            current: 0,
+            activePower: 0,
+            reactivePower: 0,
+            apparentPower: 0,
+            powerFactor: 0,
+            status: 'offline',
+            lastUpdate: 0,
+          };
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [initialDevices]);
 
+  useEffect(() => {
     const token = localStorage.getItem('token');
     const url = token ? `/api/events?token=${token}` : '/api/events';
     const eventSource = new EventSource(url);
@@ -46,15 +70,18 @@ export const useRealTimeData = (initialDevices: { id: number; name: string }[]) 
       const update = JSON.parse(event.data);
       if (update.type === 'update') {
         console.log("Real-time update received for device:", update.id);
-        setData((prev) => ({
-          ...prev,
-          [update.id]: {
-            ...prev[update.id],
-            ...update,
-            status: update.status || 'online',
-            lastUpdate: update.status === 'offline' ? prev[update.id].lastUpdate : Date.now(),
-          }
-        }));
+        setData((prev) => {
+          const existing = prev[update.id];
+          return {
+            ...prev,
+            [update.id]: {
+              ...existing,
+              ...update,
+              status: update.status || 'online',
+              lastUpdate: update.status === 'offline' ? (existing?.lastUpdate || 0) : Date.now(),
+            }
+          };
+        });
       }
     };
 

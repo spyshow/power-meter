@@ -83,4 +83,37 @@ describe('useRealTimeData', () => {
 
     expect(result.current[10].status).toBe('offline');
   });
+
+  it('handles updates for devices not in initialDevices', () => {
+    const { result } = renderHook(() => useRealTimeData([]));
+
+    act(() => {
+      mockEventSourceInstance.onmessage!({
+        data: JSON.stringify({ 
+          type: 'update', 
+          id: 20, 
+          voltage: 240,
+          status: 'online'
+        }),
+      } as MessageEvent);
+    });
+
+    expect(result.current[20]).toBeDefined();
+    expect(result.current[20].voltage).toBe(240);
+    expect(result.current[20].status).toBe('online');
+  });
+
+  it('synchronizes state when initialDevices changes', () => {
+    const { rerender, result } = renderHook(({ devices }) => useRealTimeData(devices), {
+      initialProps: { devices: [] as { id: number; name: string }[] }
+    });
+
+    expect(result.current).toEqual({});
+
+    rerender({ devices: [{ id: 30, name: 'New Device' }] });
+
+    expect(result.current[30]).toBeDefined();
+    expect(result.current[30].id).toBe(30);
+    expect(result.current[30].status).toBe('offline');
+  });
 });

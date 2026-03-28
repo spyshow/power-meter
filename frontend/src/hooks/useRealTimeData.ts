@@ -67,26 +67,32 @@ export const useRealTimeData = (initialDevices: { id: number; name: string }[]) 
     };
 
     eventSource.onmessage = (event) => {
-      const update = JSON.parse(event.data);
-      if (update.type === 'update') {
-        console.log("Real-time update received for device:", update.id);
-        setData((prev) => {
-          const existing = prev[update.id];
-          return {
-            ...prev,
-            [update.id]: {
-              ...existing,
-              ...update,
-              status: update.status || 'online',
-              lastUpdate: update.status === 'offline' ? (existing?.lastUpdate || 0) : Date.now(),
-            }
-          };
-        });
+      try {
+        const update = JSON.parse(event.data);
+        console.log(`[SSE] Event received: ${update.type}`, update);
+        
+        if (update.type === 'update') {
+          setData((prev) => {
+            const existing = prev[update.id];
+            return {
+              ...prev,
+              [update.id]: {
+                ...existing,
+                ...update,
+                status: update.status || 'online',
+                lastUpdate: update.status === 'offline' ? (existing?.lastUpdate || 0) : Date.now(),
+              }
+            };
+          });
+        }
+      } catch (err) {
+        console.error("[SSE] Failed to parse event data:", err, event.data);
       }
     };
 
-    eventSource.onerror = () => {
-      // If SSE disconnects, we keep the last data
+    eventSource.onerror = (err) => {
+      console.error("[SSE] Connection error or interrupted:", err);
+      // EventSource will automatically try to reconnect by default
     };
 
     // Offline detection

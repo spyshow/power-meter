@@ -15,12 +15,9 @@ export class DatabaseInitService implements OnModuleInit {
     try {
       await this.db.execute(sql`CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;`);
 
-      // FRESH START: Drop and recreate telemetry table to ensure clean schema
-      console.log('[DatabaseInit] Performing Fresh Start: Dropping telemetry table...');
-      await this.db.execute(sql`DROP TABLE IF EXISTS telemetry CASCADE;`);
-
+      // Ensure telemetry table exists
       await this.db.execute(sql`
-        CREATE TABLE telemetry (
+        CREATE TABLE IF NOT EXISTS telemetry (
           id SERIAL,
           timestamp TIMESTAMPTZ NOT NULL,
           device_id INTEGER NOT NULL,

@@ -54,9 +54,37 @@ export const authProvider: AuthProvider = {
     check: async () => {
         const token = localStorage.getItem("token");
         if (token) {
-            return {
-                authenticated: true,
-            };
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+
+                const payload = JSON.parse(jsonPayload);
+                const now = Math.floor(Date.now() / 1000);
+                
+                if (payload.exp && payload.exp < now) {
+                    console.log("Token expired, logging out");
+                    localStorage.removeItem("token");
+                    return {
+                        authenticated: false,
+                        logout: true,
+                        redirectTo: "/login",
+                    };
+                }
+
+                return {
+                    authenticated: true,
+                };
+            } catch (e) {
+                localStorage.removeItem("token");
+                return {
+                    authenticated: false,
+                    logout: true,
+                    redirectTo: "/login",
+                };
+            }
         }
 
         return {

@@ -10,7 +10,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromExtractors([
         ExtractJwt.fromAuthHeaderAsBearerToken(),
         (request: any) => {
-          return request?.query?.token;
+          const token = request?.query?.token;
+          if (token) {
+            console.log('[JwtStrategy] Extracted token from query string');
+          }
+          return token;
         },
       ]),
       ignoreExpiration: false,
@@ -19,6 +23,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
+    console.log('[JwtStrategy] Validating payload for user:', payload.username);
     return { userId: payload.sub, username: payload.username, role: payload.role };
   }
 }

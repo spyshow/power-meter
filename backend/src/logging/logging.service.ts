@@ -27,13 +27,14 @@ export class LoggingService implements OnModuleInit {
 
   private async pollLoop() {
     const startTime = Date.now();
-    const isConnected = this.modbusService.isConnected();
 
     for (const id of this.DEVICE_IDS) {
-      if (!isConnected) {
+      // Check connection status before each device poll
+      if (!this.modbusService.isConnected()) {
         this.eventEmitter.emit('device.update', { id, status: 'offline' });
         continue;
       }
+
       try {
         await this.pollDeviceBulk(id);
       } catch (error) {

@@ -6,6 +6,7 @@ import ModbusRTU from 'modbus-serial';
 export class ModbusService implements OnModuleInit, OnModuleDestroy {
   private client: ModbusRTU;
   private connected = false;
+  private connecting = false;
   private readonly ip: string;
   private readonly port: number;
   private readonly isSimulation: boolean;
@@ -28,23 +29,44 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleDestroy() {
     if (this.client && !this.isSimulation) {
-      await this.client.close(() => {});
+      try {
+        await new Promise<void>((resolve) => {
+          this.client.close(() => resolve());
+        });
+      } catch (e) {
+        // Ignore close errors on destroy
+      }
     }
   }
 
   async connect() {
-    if (this.connected || this.isSimulation) return;
+    if (this.isSimulation || this.connecting || this.connected) return;
+    this.connecting = true;
 
     try {
+      // Ensure any existing connection is closed first
+      try {
+        await new Promise<void>((resolve) => {
+          this.client.close(() => resolve());
+        });
+      } catch (e) {
+        // Ignore close errors
+      }
+
+      console.log(`[ModbusService] Attempting to connect to PAS600 at ${this.ip}:${this.port}...`);
       await this.client.connectTCP(this.ip, { port: this.port });
       this.client.setID(1);
       this.client.setTimeout(2000);
       this.connected = true;
-      console.log(`[ModbusService] Connected to PAS600 at ${this.ip}:${this.port}`);
+      console.log(`[ModbusService] Connected successfully to ${this.ip}:${this.port}`);
     } catch (error) {
       this.connected = false;
-      console.error('[ModbusService] Error connecting to Modbus:', error instanceof Error ? error.message : error);
-      setTimeout(() => this.connect(), 10000); // Retry every 10s
+      const msg = error instanceof Error ? error.message : String(error);
+      console.error(`[ModbusService] Connection failed: ${msg}`);
+      // Retry after 10 seconds
+      setTimeout(() => this.connect(), 10000);
+    } finally {
+      this.connecting = false;
     }
   }
 
@@ -52,16 +74,39 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
     return this.connected;
   }
 
+  private handleError(error: any) {
+    const msg = error instanceof Error ? error.message : String(error);
+    // Common modbus-serial error messages that indicate connection loss
+    if (msg.includes('ECONN') || msg.includes('Port Not Open') || msg.includes('closed') || msg.includes('Timeout')) {
+      if (this.connected) {
+        console.warn(`[ModbusService] Connection issue detected: ${msg}. Triggering reconnect...`);
+        this.connected = false;
+        this.connect();
+      }
+    }
+  }
+
   async readRaw(deviceId: number, startAddress: number, length: number): Promise<number[]> {
     if (this.isSimulation) {
       return this.generateSimulatedData(startAddress, length);
     }
 
-    if (!this.connected) throw new Error('Modbus client not connected');
-    this.client.setID(deviceId);
-    await new Promise((resolve) => setTimeout(resolve, 10));
-    const result = await this.client.readHoldingRegisters(startAddress, length);
-    return result.data;
+    if (!this.connected) {
+      // Try to connect if not connected
+      this.connect();
+      throw new Error('Modbus client not connected');
+    }
+
+    try {
+      this.client.setID(deviceId);
+      // Brief delay to allow the gateway to process the slave ID change
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      const result = await this.client.readHoldingRegisters(startAddress, length);
+      return result.data;
+    } catch (error) {
+      this.handleError(error);
+      throw error;
+    }
   }
 
   private generateSimulatedData(startAddress: number, length: number): number[] {
@@ -112,6 +157,7 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
     }
 
     if (!this.connected) {
+      this.connect();
       throw new Error('Modbus client not connected');
     }
 
@@ -129,11 +175,7 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
       }
       return floats;
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      if (msg.includes('ECONN') || msg.includes('Port Not Open') || msg.includes('closed')) {
-        this.connected = false;
-        this.connect();
-      }
+      this.handleError(error);
       throw error;
     }
   }

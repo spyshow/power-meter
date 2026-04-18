@@ -4,7 +4,7 @@ import ModbusRTU from 'modbus-serial';
 
 @Injectable()
 export class ModbusService implements OnModuleInit, OnModuleDestroy {
-  private client: ModbusRTU;
+  private client: ModbusRTU | null = null;
   private connected = false;
   private connecting = false;
   private readonly ip: string;
@@ -12,7 +12,6 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
   private readonly isSimulation: boolean;
 
   constructor(private configService: ConfigService) {
-    this.client = new ModbusRTU();
     this.ip = this.configService.get<string>('PAS600_IP') || '172.16.0.80';
     this.port = parseInt(this.configService.get<string>('PAS600_PORT') || '502', 10);
     this.isSimulation = this.configService.get<string>('MODBUS_SIMULATION') === 'true' || this.ip === 'SIMULATE';
@@ -28,13 +27,23 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleDestroy() {
+    await this.cleanup();
+  }
+
+  private async cleanup() {
     if (this.client && !this.isSimulation) {
+      const oldClient = this.client;
+      this.client = null;
+      this.connected = false;
+      
       try {
         await new Promise<void>((resolve) => {
-          this.client.close(() => resolve());
+          // Remove all listeners to prevent memory leaks and redundant error handling during shutdown
+          oldClient.removeAllListeners();
+          oldClient.close(() => resolve());
         });
       } catch (e) {
-        // Ignore close errors on destroy
+        // Ignore close errors
       }
     }
   }
@@ -44,19 +53,33 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
     this.connecting = true;
 
     try {
-      // Ensure any existing connection is closed first
-      try {
-        await new Promise<void>((resolve) => {
-          this.client.close(() => resolve());
-        });
-      } catch (e) {
-        // Ignore close errors
-      }
+      // Completely tear down the old client to ensure no stale state remains
+      await this.cleanup();
 
-      console.log(`[ModbusService] Attempting to connect to PAS600 at ${this.ip}:${this.port}...`);
-      await this.client.connectTCP(this.ip, { port: this.port });
-      this.client.setID(1);
-      this.client.setTimeout(2000);
+      console.log(`[ModbusService] Creating new client and connecting to PAS600 at ${this.ip}:${this.port}...`);
+      
+      const newClient = new ModbusRTU();
+      
+      // Proactive disconnection detection via events
+      newClient.on('error', (err) => {
+        console.error(`[ModbusService] Client error event: ${err.message}`);
+        this.connected = false;
+        // Don't call connect() immediately here to avoid potential loops; 
+        // the next read attempt or poll will trigger it.
+      });
+
+      newClient.on('close', () => {
+        if (this.connected) {
+          console.warn('[ModbusService] Client connection closed event');
+          this.connected = false;
+        }
+      });
+
+      await newClient.connectTCP(this.ip, { port: this.port });
+      newClient.setID(1);
+      newClient.setTimeout(2000);
+      
+      this.client = newClient;
       this.connected = true;
       console.log(`[ModbusService] Connected successfully to ${this.ip}:${this.port}`);
     } catch (error) {
@@ -91,7 +114,7 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
       return this.generateSimulatedData(startAddress, length);
     }
 
-    if (!this.connected) {
+    if (!this.connected || !this.client) {
       // Try to connect if not connected
       this.connect();
       throw new Error('Modbus client not connected');
@@ -156,7 +179,7 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
       return floats;
     }
 
-    if (!this.connected) {
+    if (!this.connected || !this.client) {
       this.connect();
       throw new Error('Modbus client not connected');
     }

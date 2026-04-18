@@ -7,6 +7,7 @@ import { PeakService } from '../peaks/peak.service';
 @Injectable()
 export class LoggingService implements OnModuleInit {
   private readonly DEVICE_IDS = [10, 20, 30, 40, 50, 60];
+  private wasDisconnected = false;
   
   // Base register for the block we want to read
   private readonly START_REG = 3010 - 1; // 3009
@@ -27,21 +28,35 @@ export class LoggingService implements OnModuleInit {
 
   private async pollLoop() {
     const startTime = Date.now();
+    const isCurrentlyConnected = this.modbusService.isConnected();
 
-    for (const id of this.DEVICE_IDS) {
-      // Check connection status before each device poll
-      if (!this.modbusService.isConnected()) {
+    if (!isCurrentlyConnected) {
+      if (!this.wasDisconnected) {
+        console.warn('[LoggingService] Modbus system is OFFLINE. Suspending device polls...');
+        this.wasDisconnected = true;
+      }
+      // Report all devices as offline
+      for (const id of this.DEVICE_IDS) {
         this.eventEmitter.emit('device.update', { id, status: 'offline' });
-        continue;
+      }
+    } else {
+      if (this.wasDisconnected) {
+        console.log('[LoggingService] Modbus system is BACK ONLINE. Resuming device polls.');
+        this.wasDisconnected = false;
       }
 
-      try {
-        await this.pollDeviceBulk(id);
-      } catch (error) {
-        // Error logged in pollDeviceBulk
+      for (const id of this.DEVICE_IDS) {
+        // Re-check before each poll in case it dropped during the loop
+        if (!this.modbusService.isConnected()) break;
+
+        try {
+          await this.pollDeviceBulk(id);
+        } catch (error) {
+          // Error logged in pollDeviceBulk
+        }
+        // Small 20ms gap between different devices to let the gateway breathe
+        await new Promise((resolve) => setTimeout(resolve, 20));
       }
-      // Small 20ms gap between different devices to let the gateway breathe
-      await new Promise((resolve) => setTimeout(resolve, 20));
     }
 
     // Calculate how long the poll took and adjust the next cycle to hit exactly 1s

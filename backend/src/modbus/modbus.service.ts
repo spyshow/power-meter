@@ -61,8 +61,8 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
       const newClient = new ModbusRTU();
       
       // Proactive disconnection detection via events
-      newClient.on('error', (err) => {
-        console.error(`[ModbusService] Client error event: ${err.message}`);
+      newClient.on('error', (err: any) => {
+        console.error(`[ModbusService] Client error event: ${err?.message || err}`);
         this.connected = false;
         // Don't call connect() immediately here to avoid potential loops; 
         // the next read attempt or poll will trigger it.

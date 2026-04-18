@@ -6,5 +6,7 @@ declare module 'modbus-serial' {
     setTimeout(ms: number): void;
     readHoldingRegisters(address: number, length: number): Promise<{ data: number[] }>;
     close(callback: () => void): void;
+    on(event: string, callback: (err?: any) => void): void;
+    removeAllListeners(event?: string): void;
   }
 }

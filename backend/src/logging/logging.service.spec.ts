@@ -77,4 +77,25 @@ describe('LoggingService', () => {
       }),
     );
   });
+
+  it('should skip poll and not save when data contains NaN', async () => {
+    const deviceId = 10;
+    const mockData = new Array(76).fill(0);
+    
+    // Fill everything but power factor
+    const buf = Buffer.alloc(4);
+    buf.writeFloatBE(5.2, 0);
+    mockData[0] = buf.readUInt16BE(0);
+    mockData[1] = buf.readUInt16BE(2);
+    
+    // Simulate power factor as NaN (e.g. invalid bytes)
+    mockData[74] = 0x7FFF;
+    mockData[75] = 0x7FFF;
+
+    mockModbusService.readRaw.mockResolvedValue(mockData);
+
+    await service.pollDeviceBulk(deviceId);
+
+    expect(mockTelemetryRepo.create).not.toHaveBeenCalled();
+  });
 });

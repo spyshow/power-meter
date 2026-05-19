@@ -32,9 +32,12 @@ export class LoggingService implements OnModuleInit {
 
     if (!isCurrentlyConnected) {
       if (!this.wasDisconnected) {
-        console.warn('[LoggingService] Modbus system is OFFLINE. Suspending device polls...');
+        console.warn('[LoggingService] Modbus system is OFFLINE. Attempting to reconnect...');
         this.wasDisconnected = true;
       }
+      // Try to trigger a reconnect through modbus service
+      this.modbusService.connect();
+
       // Report all devices as offline
       for (const id of this.DEVICE_IDS) {
         this.eventEmitter.emit('device.update', { id, status: 'offline' });
@@ -54,8 +57,8 @@ export class LoggingService implements OnModuleInit {
         } catch (error) {
           // Error logged in pollDeviceBulk
         }
-        // Small 20ms gap between different devices to let the gateway breathe
-        await new Promise((resolve) => setTimeout(resolve, 20));
+        // Small 50ms gap between different devices to let the gateway breathe
+        await new Promise((resolve) => setTimeout(resolve, 50));
       }
     }
 
@@ -100,6 +103,15 @@ export class LoggingService implements OnModuleInit {
       const reactivePower = this.round(this.extractFloat(data, 58), 1);    // 3068
       const apparentPower = this.round(this.extractFloat(data, 66), 1);    // 3076
       const powerFactor = this.round(this.extractFloat(data, 74), 2);      // 3084
+
+      // Validate data before proceeding
+      if (
+        isNaN(current) || isNaN(voltage) || isNaN(activePower) || 
+        isNaN(reactivePower) || isNaN(apparentPower) || isNaN(powerFactor)
+      ) {
+        console.warn(`[LoggingService] Skipping device ${id} poll due to NaN values in data`);
+        return;
+      }
 
       await this.telemetryRepo.create({
         deviceId: id,

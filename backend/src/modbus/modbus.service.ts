@@ -77,7 +77,7 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
 
       await newClient.connectTCP(this.ip, { port: this.port });
       newClient.setID(1);
-      newClient.setTimeout(2000);
+      newClient.setTimeout(5000);
       
       this.client = newClient;
       this.connected = true;
@@ -87,10 +87,15 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
       const msg = error instanceof Error ? error.message : String(error);
       console.error(`[ModbusService] Connection failed: ${msg}`);
       // Retry after 10 seconds
-      setTimeout(() => this.connect(), 10000);
+      this.scheduleReconnect(10000);
     } finally {
       this.connecting = false;
     }
+  }
+
+  private scheduleReconnect(delay: number) {
+    if (this.isSimulation) return;
+    setTimeout(() => this.connect(), delay);
   }
 
   isConnected(): boolean {

@@ -27,6 +27,7 @@ coverage/
 
 # Auto Claude data directory
 .auto-claude/
+.gemini/
 
 # Auto Claude generated files
 .auto-claude-security.json

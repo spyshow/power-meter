@@ -78,17 +78,46 @@ describe('LoggingService', () => {
     );
   });
 
-  it('should skip poll and not save when data contains NaN', async () => {
+  it('should skip poll and not save when data contains NaN in critical fields', async () => {
     const deviceId = 10;
     const mockData = new Array(76).fill(0);
     
-    // Fill everything but power factor
+    // Fill current
     const buf = Buffer.alloc(4);
     buf.writeFloatBE(5.2, 0);
     mockData[0] = buf.readUInt16BE(0);
     mockData[1] = buf.readUInt16BE(2);
     
-    // Simulate power factor as NaN (e.g. invalid bytes)
+    // Simulate voltage as NaN
+    mockData[16] = 0x7FFF;
+    mockData[17] = 0x7FFF;
+
+    mockModbusService.readRaw.mockResolvedValue(mockData);
+
+    await service.pollDeviceBulk(deviceId);
+
+    expect(mockTelemetryRepo.create).not.toHaveBeenCalled();
+  });
+
+  it('should not skip poll and default power factor to 0 when it is NaN', async () => {
+    const deviceId = 10;
+    const mockData = new Array(76).fill(0);
+    
+    // Fill everything but power factor
+    const writeFloat = (val: number, offset: number) => {
+      const buf = Buffer.alloc(4);
+      buf.writeFloatBE(val, 0);
+      mockData[offset] = buf.readUInt16BE(0);
+      mockData[offset + 1] = buf.readUInt16BE(2);
+    };
+
+    writeFloat(5.2, 0);   // Current
+    writeFloat(230.5, 16); // Voltage
+    writeFloat(1.1, 50);  // Active
+    writeFloat(0.5, 58);  // Reactive
+    writeFloat(1.2, 66);  // Apparent
+    
+    // PF as NaN
     mockData[74] = 0x7FFF;
     mockData[75] = 0x7FFF;
 
@@ -96,6 +125,11 @@ describe('LoggingService', () => {
 
     await service.pollDeviceBulk(deviceId);
 
-    expect(mockTelemetryRepo.create).not.toHaveBeenCalled();
+    expect(mockTelemetryRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        deviceId,
+        powerFactor: 0,
+      }),
+    );
   });
 });

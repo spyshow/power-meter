@@ -83,7 +83,7 @@ export class LoggingService implements OnModuleInit {
 
   async pollDeviceBulk(id: number) {
     try {
-      // Read the entire block from 3009 to 3085 (76 registers)
+      // Read the entire block from 3010 to 3085 (76 registers)
       // This is much faster than 6 separate network calls
       const data = await this.modbusService.readRaw(id, this.START_REG, this.REG_COUNT);
 
@@ -91,7 +91,7 @@ export class LoggingService implements OnModuleInit {
         throw new Error(`Insufficient data received for device ${id}`);
       }
 
-      // Map offsets relative to 3009 (0-based start)
+      // Map offsets relative to 3010 (0-based start)
       // 3010 is index 0
       // 3026 is index (3026-3010) = 16
       // 3060 is index (3060-3010) = 50
@@ -102,14 +102,23 @@ export class LoggingService implements OnModuleInit {
       const activePower = this.round(this.extractFloat(data, 50), 1);      // 3060
       const reactivePower = this.round(this.extractFloat(data, 58), 1);    // 3068
       const apparentPower = this.round(this.extractFloat(data, 66), 1);    // 3076
-      const powerFactor = this.round(this.extractFloat(data, 74), 2);      // 3084
+      let powerFactor = this.round(this.extractFloat(data, 74), 2);        // 3084
+
+      // Default powerFactor to 0 if it's NaN (common when there's no load)
+      if (isNaN(powerFactor)) powerFactor = 0;
 
       // Validate data before proceeding
-      if (
-        isNaN(current) || isNaN(voltage) || isNaN(activePower) || 
-        isNaN(reactivePower) || isNaN(apparentPower) || isNaN(powerFactor)
-      ) {
-        console.warn(`[LoggingService] Skipping device ${id} poll due to NaN values in data`);
+      const nanFields = [];
+      if (isNaN(current)) nanFields.push('current');
+      if (isNaN(voltage)) nanFields.push('voltage');
+      if (isNaN(activePower)) nanFields.push('activePower');
+      if (isNaN(reactivePower)) nanFields.push('reactivePower');
+      if (isNaN(apparentPower)) nanFields.push('apparentPower');
+
+      if (nanFields.length > 0) {
+        console.warn(
+          `[LoggingService] Skipping device ${id} poll due to NaN values in fields: ${nanFields.join(', ')}`,
+        );
         return;
       }
 

@@ -64,7 +64,7 @@ export const Reports: React.FC = () => {
         }
       });
 
-      const data = response.data || [];
+      const data = (response.data as any) || [];
       if (data.length === 0) {
         notification.info({
           message: 'No Data Found',

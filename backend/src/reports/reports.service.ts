@@ -75,6 +75,7 @@ export class ReportsService {
           AND timestamp >= ${startStr}
           AND timestamp <= ${endStr}
         ORDER BY timestamp ASC
+        LIMIT 50000
       `;
       const result = await this.db.execute(query);
       const rows = result.rows || result;
@@ -85,9 +86,11 @@ export class ReportsService {
       }));
     } else {
       let interval = '1 minute';
-      if (params.range === '6d') interval = '1 hour';
-      else if (params.range === '24h') interval = '10 minutes';
+      if (params.range === '30d') interval = '6 hours';
+      else if (params.range === '7d' || params.range === '6d') interval = '1 hour';
+      else if (params.range === '24h') interval = '15 minutes';
       else if (params.range === '6h') interval = '5 minutes';
+      else if (params.range === '1h') interval = '1 minute';
 
       // Select raw averages then round in JS to avoid SQL casting complexity for multiple aliases
       const binnedSelect = metrics.map(m => `AVG(${this.mapMetricToColumn(m)}) as "${m}_raw"`).join(', ');
@@ -163,15 +166,22 @@ export class ReportsService {
       const page = await browser.newPage();
       page.setDefaultNavigationTimeout(30000);
       page.setDefaultTimeout(30000);
+      
       const chartLabels = [...new Set(data.map((d) => new Date(d.timestamp).toISOString()))].sort();
+      
+      // Pre-process data into a map for O(1) lookup: key = deviceId-timestamp
+      const dataMap = new Map();
+      data.forEach(d => {
+        const time = new Date(d.timestamp).toISOString();
+        const id = d.device_id || d.deviceId || 'Unknown';
+        dataMap.set(`${id}-${time}`, Number(d.apparentPower || d.apparent_power || d.kva) || 0);
+      });
+
       const datasets = devices.map((deviceId, index) => {
         const colors = ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)'];
         return {
           label: `Device ${deviceId} (Apparent Power)`,
-          data: chartLabels.map((time) => {
-            const item = data.find((d) => new Date(d.timestamp).toISOString() === time && (d.device_id || d.deviceId || 'Unknown') === deviceId);
-            return item ? Number(item.apparentPower || item.apparent_power || item.kva) || 0 : null;
-          }),
+          data: chartLabels.map((time) => dataMap.get(`${deviceId}-${time}`) ?? null),
           borderColor: colors[index % colors.length],
           fill: false,
         };
@@ -201,7 +211,7 @@ export class ReportsService {
         </html>
       `);
 
-      await page.waitForNetworkIdle();
+      await page.waitForNetworkIdle({ timeout: 10000 }).catch(e => console.warn('Chart.js CDN load timeout, proceeding anyway', e));
       const chartBuffer = await page.screenshot({ clip: { x: 0, y: 0, width: 800, height: 400 } });
 
       const imageId = workbook.addImage({
@@ -213,6 +223,8 @@ export class ReportsService {
         tl: { col: 5, row: 1 },
         ext: { width: 600, height: 300 }
       });
+    } catch (chartError) {
+      console.error('Error generating chart for Excel:', chartError);
     } finally {
       await browser.close();
     }
@@ -267,14 +279,20 @@ export class ReportsService {
       });
 
       const chartLabels = [...new Set(data.map((d) => new Date(d.timestamp).toISOString()))].sort();
+      
+      // Pre-process data into a map for O(1) lookup: key = deviceId-timestamp
+      const dataMap = new Map();
+      data.forEach(d => {
+        const time = new Date(d.timestamp).toISOString();
+        const id = d.device_id || d.deviceId || 'Unknown';
+        dataMap.set(`${id}-${time}`, Number(d.apparentPower || d.apparent_power || d.kva) || 0);
+      });
+
       const datasets = devices.map((deviceId, index) => {
         const colors = ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)'];
         return {
           label: `Device ${deviceId} (Apparent Power)`,
-          data: chartLabels.map((time) => {
-            const item = data.find((d) => new Date(d.timestamp).toISOString() === time && (d.device_id || d.deviceId || 'Unknown') === deviceId);
-            return item ? Number(item.apparentPower || item.apparent_power || item.kva) || 0 : null;
-          }),
+          data: chartLabels.map((time) => dataMap.get(`${deviceId}-${time}`) ?? null),
           borderColor: colors[index % colors.length],
           backgroundColor: colors[index % colors.length].replace('1)', '0.2)'),
           fill: false,

@@ -142,7 +142,7 @@ export class ReportsService {
 
     const summaryData = devices.map((deviceId) => {
       const deviceData = data.filter((item) => (item.device_id || item.deviceId || 'Unknown') === deviceId);
-      const apparentValues = deviceData.map((d) => Number(d.apparentPower || d.apparent_power) || 0).filter((v) => v > 0);
+      const apparentValues = deviceData.map((d) => Number(d.apparentPower || d.apparent_power || d.kva) || 0).filter((v) => v > 0);
       return {
         deviceId,
         count: deviceData.length,
@@ -167,7 +167,7 @@ export class ReportsService {
           label: `Device ${deviceId} (Apparent Power)`,
           data: chartLabels.map((time) => {
             const item = data.find((d) => new Date(d.timestamp).toISOString() === time && (d.device_id || d.deviceId || 'Unknown') === deviceId);
-            return item ? Number(item.apparentPower || item.apparent_power) || 0 : null;
+            return item ? Number(item.apparentPower || item.apparent_power || item.kva) || 0 : null;
           }),
           borderColor: colors[index % colors.length],
           fill: false,
@@ -251,7 +251,7 @@ export class ReportsService {
       const devices = [...new Set(data.map((item) => item.device_id || item.deviceId || 'Unknown'))];
       const summary = devices.map((deviceId) => {
         const deviceData = data.filter((item) => (item.device_id || item.deviceId || 'Unknown') === deviceId);
-        const apparentValues = deviceData.map((d) => Number(d.apparentPower || d.apparent_power) || 0).filter((v) => v > 0);
+        const apparentValues = deviceData.map((d) => Number(d.apparentPower || d.apparent_power || d.kva) || 0).filter((v) => v > 0);
         return {
           deviceId,
           count: deviceData.length,
@@ -267,7 +267,7 @@ export class ReportsService {
           label: `Device ${deviceId} (Apparent Power)`,
           data: chartLabels.map((time) => {
             const item = data.find((d) => new Date(d.timestamp).toISOString() === time && (d.device_id || d.deviceId || 'Unknown') === deviceId);
-            return item ? Number(item.apparentPower || item.apparent_power) || 0 : null;
+            return item ? Number(item.apparentPower || item.apparent_power || item.kva) || 0 : null;
           }),
           borderColor: colors[index % colors.length],
           backgroundColor: colors[index % colors.length].replace('1)', '0.2)'),

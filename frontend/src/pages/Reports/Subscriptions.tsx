@@ -87,7 +87,10 @@ export const ReportSubscriptions: React.FC = () => {
             <Select mode="multiple" placeholder="Search and select metrics">
               <Select.Option value="voltage">Voltage (V)</Select.Option>
               <Select.Option value="current">Current (A)</Select.Option>
-              <Select.Option value="kva">Power (kVA)</Select.Option>
+              <Select.Option value="activePower">Active Power (kW)</Select.Option>
+              <Select.Option value="reactivePower">Reactive Power (kVAR)</Select.Option>
+              <Select.Option value="kva">Apparent Power (kVA)</Select.Option>
+              <Select.Option value="powerFactor">Power Factor</Select.Option>
             </Select>
           </Form.Item>
 

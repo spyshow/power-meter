@@ -75,7 +75,7 @@ export class ReportsService {
           AND timestamp >= ${startStr}
           AND timestamp <= ${endStr}
         ORDER BY timestamp ASC
-        LIMIT 50000
+        LIMIT 100000
       `;
       const result = await this.db.execute(query);
       const rows = result.rows || result;

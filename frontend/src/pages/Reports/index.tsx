@@ -11,7 +11,9 @@ import {
   Divider, 
   Row, 
   Col,
-  Radio
+  Radio,
+  notification,
+  Empty
 } from 'antd';
 import { FilePdfOutlined, FileExcelOutlined, SearchOutlined } from '@ant-design/icons';
 import { useApiUrl, useCustomMutation } from '@refinedev/core';
@@ -25,77 +27,98 @@ export const Reports: React.FC = () => {
   const [form] = Form.useForm();
   const [previewData, setPreviewData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [downloading, setDownloading] = useState<string | null>(null);
 
-  const { mutate: mutatePreview } = useCustomMutation();
+  const { mutateAsync: mutatePreview } = useCustomMutation();
 
   const handlePreview = async (values: any) => {
     setLoading(true);
-    const { range, devices, metrics, granularity } = values;
+    setPreviewData([]);
+    
+    try {
+      const { range, devices, metrics, granularity } = values;
 
-    const params: any = {
-      deviceIds: devices,
-      metrics: metrics,
-      granularity: granularity,
-    };
+      const params: any = {
+        deviceIds: devices,
+        metrics: metrics,
+        granularity: granularity,
+      };
 
-    if (range && range.length === 2) {
-      params.start = range[0].toISOString();
-      params.stop = range[1].toISOString();
-    } else {
-      params.range = '1h'; // Default if none selected
-    }
+      if (range && range.length === 2) {
+        params.start = range[0].toISOString();
+        params.stop = range[1].toISOString();
+      } else {
+        params.range = '1h'; // Default if none selected
+      }
 
-    const token = localStorage.getItem('token');
+      const token = localStorage.getItem('token');
 
-    mutatePreview({
-      url: `${apiUrl}/reports/preview`,
-      method: 'post',
-      values: params,
-      config: {
-        headers: {
-          Authorization: `Bearer ${token}`
+      const response = await mutatePreview({
+        url: `${apiUrl}/reports/preview`,
+        method: 'post',
+        values: params,
+        config: {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         }
+      });
+
+      const data = response.data || [];
+      if (data.length === 0) {
+        notification.info({
+          message: 'No Data Found',
+          description: 'No telemetry data matches the selected criteria.',
+        });
       }
-    }, {
-      onSuccess: (data: any) => {
-        setPreviewData(data.data || []);
-        setLoading(false);
-      },
-      onError: () => {
-        setLoading(false);
-      }
-    });
+      setPreviewData(data);
+    } catch (error: any) {
+      console.error('Preview error:', error);
+      notification.error({
+        message: 'Preview Failed',
+        description: error.message || 'An unexpected error occurred while fetching preview data.',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDownload = async (format: 'pdf' | 'xlsx') => {
-    const values = await form.validateFields();
-    const { range, devices, metrics, granularity } = values;
+    setDownloading(format);
+    
+    try {
+      const values = await form.validateFields();
+      const { range, devices, metrics, granularity } = values;
 
-    const params: any = {
-      deviceIds: devices,
-      metrics: metrics,
-      granularity: granularity,
-      format: format
-    };
+      const params: any = {
+        deviceIds: devices,
+        metrics: metrics,
+        granularity: granularity,
+        format: format
+      };
 
-    if (range && range.length === 2) {
-      params.start = range[0].toISOString();
-      params.stop = range[1].toISOString();
-    } else {
-      params.range = '1h';
-    }
+      if (range && range.length === 2) {
+        params.start = range[0].toISOString();
+        params.stop = range[1].toISOString();
+      } else {
+        params.range = '1h';
+      }
 
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${apiUrl}/reports/download`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(params)
-    });
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${apiUrl}/reports/download`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(params)
+      });
 
-    if (response.ok) {
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Download failed with status ${response.status}`);
+      }
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -104,6 +127,19 @@ export const Reports: React.FC = () => {
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
+      
+      notification.success({
+        message: 'Export Successful',
+        description: `Your ${format.toUpperCase()} report has been generated.`,
+      });
+    } catch (error: any) {
+      console.error('Download error:', error);
+      notification.error({
+        message: 'Export Failed',
+        description: error.message || 'An unexpected error occurred during export.',
+      });
+    } finally {
+      setDownloading(null);
     }
   };
 
@@ -189,18 +225,23 @@ export const Reports: React.FC = () => {
                   icon={<SearchOutlined />}
                   htmlType="submit"
                   loading={loading}
+                  disabled={!!downloading}
                 >
                   Preview Data
                 </Button>
                 <Button
                   icon={<FilePdfOutlined />}
                   onClick={() => handleDownload('pdf')}
+                  loading={downloading === 'pdf'}
+                  disabled={loading || (!!downloading && downloading !== 'pdf')}
                 >
                   Export PDF
                 </Button>
                 <Button
                   icon={<FileExcelOutlined />}
                   onClick={() => handleDownload('xlsx')}
+                  loading={downloading === 'xlsx'}
+                  disabled={loading || (!!downloading && downloading !== 'xlsx')}
                 >
                   Export Excel
                 </Button>
@@ -210,18 +251,22 @@ export const Reports: React.FC = () => {
         </Form>
       </Card>
 
-      {previewData.length > 0 && (
-        <div style={{ marginTop: '24px' }}>
-          <Title level={4}>Data Preview (First 100 rows)</Title>
-          <Table
-            dataSource={previewData.slice(0, 100)}
-            columns={columns}
-            rowKey={(record: any) => `${record.device_id}-${record.timestamp}`}
-            pagination={{ pageSize: 10 }}
-            size="small"
-          />
-        </div>
-      )}
+      <div style={{ marginTop: '24px' }}>
+        {previewData.length > 0 ? (
+          <>
+            <Title level={4}>Data Preview (First 100 rows)</Title>
+            <Table
+              dataSource={previewData.slice(0, 100)}
+              columns={columns}
+              rowKey={(record: any) => `${record.device_id}-${record.timestamp}`}
+              pagination={{ pageSize: 10 }}
+              size="small"
+            />
+          </>
+        ) : !loading && (
+          <Empty description="No data to display. Select criteria and click 'Preview Data'." />
+        )}
+      </div>
     </div>
   );
 };

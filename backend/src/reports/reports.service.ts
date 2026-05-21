@@ -155,11 +155,14 @@ export class ReportsService {
 
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
     });
 
     try {
       const page = await browser.newPage();
+      page.setDefaultNavigationTimeout(30000);
+      page.setDefaultTimeout(30000);
       const chartLabels = [...new Set(data.map((d) => new Date(d.timestamp).toISOString()))].sort();
       const datasets = devices.map((deviceId, index) => {
         const colors = ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)'];
@@ -243,11 +246,14 @@ export class ReportsService {
   async generatePDF(data: any[], fileName: string): Promise<string> {
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
     });
 
     try {
       const page = await browser.newPage();
+      page.setDefaultNavigationTimeout(30000);
+      page.setDefaultTimeout(30000);
       const devices = [...new Set(data.map((item) => item.device_id || item.deviceId || 'Unknown'))];
       const summary = devices.map((deviceId) => {
         const deviceData = data.filter((item) => (item.device_id || item.deviceId || 'Unknown') === deviceId);

@@ -57,6 +57,28 @@ describe('ReportsService', () => {
       expect(Array.isArray(data)).toBe(true);
       expect(data[0]).toHaveProperty('activePower');
     });
+
+    it('should return an empty array when no data is found', async () => {
+      mockDb.execute.mockResolvedValueOnce([]);
+      const data = await service.getReportData({
+        deviceIds: ['99'],
+        metrics: ['voltage'],
+        range: '1h',
+        granularity: 'raw',
+      });
+      expect(data).toEqual([]);
+    });
+
+    it('should correctly handle "kva" metric alias', async () => {
+      mockDb.execute.mockResolvedValueOnce([{ device_id: 10, timestamp: new Date(), kva: 1.5 }]);
+      const data = await service.getReportData({
+        deviceIds: ['10'],
+        metrics: ['kva'],
+        range: '1h',
+        granularity: 'raw',
+      });
+      expect(data[0]).toHaveProperty('kva', 1.5);
+    });
   });
 
   describe('generateExcel', () => {

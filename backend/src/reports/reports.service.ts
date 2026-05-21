@@ -7,6 +7,15 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as puppeteer from 'puppeteer';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+// Configurable or default server timezone
+const REPORT_TIMEZONE = process.env.TZ || 'Asia/Riyadh';
+
 
 export interface ReportParams {
   deviceIds: string[];
@@ -167,12 +176,12 @@ export class ReportsService {
       page.setDefaultNavigationTimeout(30000);
       page.setDefaultTimeout(30000);
       
-      const chartLabels = [...new Set(data.map((d) => new Date(d.timestamp).toISOString()))].sort();
+      const chartLabels = [...new Set(data.map((d) => dayjs.utc(d.timestamp).tz(REPORT_TIMEZONE).format('YYYY-MM-DD HH:mm:ss')))].sort();
       
       // Pre-process data into a map for O(1) lookup: key = deviceId-timestamp
       const dataMap = new Map();
       data.forEach(d => {
-        const time = new Date(d.timestamp).toISOString();
+        const time = dayjs.utc(d.timestamp).tz(REPORT_TIMEZONE).format('YYYY-MM-DD HH:mm:ss');
         const id = d.device_id || d.deviceId || 'Unknown';
         dataMap.set(`${id}-${time}`, Number(d.apparentPower || d.apparent_power || d.kva) || 0);
       });
@@ -242,7 +251,14 @@ export class ReportsService {
         }));
         worksheet.columns = columns;
         worksheet.getRow(1).font = { bold: true };
-        worksheet.addRows(deviceData);
+        
+        // Format timestamps to local timezone
+        const formattedData = deviceData.map(row => ({
+          ...row,
+          timestamp: dayjs.utc(row.timestamp).tz(REPORT_TIMEZONE).format('YYYY-MM-DD HH:mm:ss')
+        }));
+        
+        worksheet.addRows(formattedData);
       }
     } else {
       workbook.addWorksheet('Empty Report');
@@ -278,12 +294,12 @@ export class ReportsService {
         };
       });
 
-      const chartLabels = [...new Set(data.map((d) => new Date(d.timestamp).toISOString()))].sort();
+      const chartLabels = [...new Set(data.map((d) => dayjs.utc(d.timestamp).tz(REPORT_TIMEZONE).format('YYYY-MM-DD HH:mm:ss')))].sort();
       
       // Pre-process data into a map for O(1) lookup: key = deviceId-timestamp
       const dataMap = new Map();
       data.forEach(d => {
-        const time = new Date(d.timestamp).toISOString();
+        const time = dayjs.utc(d.timestamp).tz(REPORT_TIMEZONE).format('YYYY-MM-DD HH:mm:ss');
         const id = d.device_id || d.deviceId || 'Unknown';
         dataMap.set(`${id}-${time}`, Number(d.apparentPower || d.apparent_power || d.kva) || 0);
       });
@@ -311,7 +327,7 @@ export class ReportsService {
           ${Object.entries(row).map(([key, val]) => {
             let displayVal = val;
             if (key === 'timestamp') {
-              displayVal = dayjs(val as any).format('YYYY-MM-DD HH:mm:ss');
+              displayVal = dayjs.utc(val as any).tz(REPORT_TIMEZONE).format('YYYY-MM-DD HH:mm:ss');
             }
             return `<td>${displayVal}</td>`;
           }).join('')}

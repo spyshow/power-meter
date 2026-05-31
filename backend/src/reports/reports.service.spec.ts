@@ -42,6 +42,12 @@ describe('ReportsService', () => {
     service = module.get<ReportsService>(ReportsService);
   });
 
+  afterEach(async () => {
+    if (service) {
+      await service.onModuleDestroy();
+    }
+  });
+
   it('should be defined', () => {
     expect(service).toBeDefined();
   });

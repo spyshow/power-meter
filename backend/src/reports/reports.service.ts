@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, OnModuleDestroy, Logger } from '@nestjs/common';
 import { DRIZZLE_PROVIDER } from '../database/constants';
 import { telemetry } from '../database/schema';
 import { sql } from 'drizzle-orm';
@@ -16,7 +16,6 @@ dayjs.extend(timezone);
 // Configurable or default server timezone
 const REPORT_TIMEZONE = process.env.TZ || 'Asia/Riyadh';
 
-
 export interface ReportParams {
   deviceIds: string[];
   metrics: string[];
@@ -27,8 +26,36 @@ export interface ReportParams {
 }
 
 @Injectable()
-export class ReportsService {
+export class ReportsService implements OnModuleDestroy {
+  private readonly logger = new Logger(ReportsService.name);
+  private browser: puppeteer.Browser | null = null;
+
   constructor(@Inject(DRIZZLE_PROVIDER) private db: any) {}
+
+  async onModuleDestroy() {
+    if (this.browser) {
+      await this.browser.close();
+    }
+  }
+
+  private async getBrowser(): Promise<puppeteer.Browser> {
+    if (this.browser && this.browser.connected) {
+      return this.browser;
+    }
+
+    this.logger.log('Launching new Puppeteer browser instance...');
+    this.browser = await puppeteer.launch({
+      headless: true,
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+      ],
+    });
+    return this.browser;
+  }
 
   private mapMetricToColumn(metric: string): string {
     const mapping: Record<string, string> = {
@@ -101,7 +128,6 @@ export class ReportsService {
       else if (params.range === '6h') interval = '5 minutes';
       else if (params.range === '1h') interval = '1 minute';
 
-      // Select raw averages then round in JS to avoid SQL casting complexity for multiple aliases
       const binnedSelect = metrics.map(m => `AVG(${this.mapMetricToColumn(m)}) as "${m}_raw"`).join(', ');
 
       const query = sql`
@@ -165,20 +191,16 @@ export class ReportsService {
 
     summarySheet.addRows(summaryData);
 
-    const browser = await puppeteer.launch({
-      headless: true,
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-    });
+    const browser = await this.getBrowser();
+    let page: puppeteer.Page | null = null;
 
     try {
-      const page = await browser.newPage();
+      page = await browser.newPage();
       page.setDefaultNavigationTimeout(30000);
       page.setDefaultTimeout(30000);
       
       const chartLabels = [...new Set(data.map((d) => dayjs.utc(d.timestamp).tz(REPORT_TIMEZONE).format('YYYY-MM-DD HH:mm:ss')))].sort();
       
-      // Pre-process data into a map for O(1) lookup: key = deviceId-timestamp
       const dataMap = new Map();
       data.forEach(d => {
         const time = dayjs.utc(d.timestamp).tz(REPORT_TIMEZONE).format('YYYY-MM-DD HH:mm:ss');
@@ -218,9 +240,8 @@ export class ReportsService {
             </script>
           </body>
         </html>
-      `);
+      `, { waitUntil: 'networkidle0' });
 
-      await page.waitForNetworkIdle({ timeout: 10000 }).catch(e => console.warn('Chart.js CDN load timeout, proceeding anyway', e));
       const chartBuffer = await page.screenshot({ clip: { x: 0, y: 0, width: 800, height: 400 } });
 
       const imageId = workbook.addImage({
@@ -233,9 +254,9 @@ export class ReportsService {
         ext: { width: 600, height: 300 }
       });
     } catch (chartError) {
-      console.error('Error generating chart for Excel:', chartError);
+      this.logger.error('Error generating chart for Excel:', chartError);
     } finally {
-      await browser.close();
+      if (page) await page.close();
     }
 
     if (data.length > 0) {
@@ -252,7 +273,6 @@ export class ReportsService {
         worksheet.columns = columns;
         worksheet.getRow(1).font = { bold: true };
         
-        // Format timestamps to local timezone
         const formattedData = deviceData.map(row => ({
           ...row,
           timestamp: dayjs.utc(row.timestamp).tz(REPORT_TIMEZONE).format('YYYY-MM-DD HH:mm:ss')
@@ -272,14 +292,11 @@ export class ReportsService {
   }
 
   async generatePDF(data: any[], fileName: string): Promise<string> {
-    const browser = await puppeteer.launch({
-      headless: true,
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-    });
+    const browser = await this.getBrowser();
+    let page: puppeteer.Page | null = null;
 
     try {
-      const page = await browser.newPage();
+      page = await browser.newPage();
       page.setDefaultNavigationTimeout(30000);
       page.setDefaultTimeout(30000);
       const devices = [...new Set(data.map((item) => item.device_id || item.deviceId || 'Unknown'))];
@@ -296,7 +313,6 @@ export class ReportsService {
 
       const chartLabels = [...new Set(data.map((d) => dayjs.utc(d.timestamp).tz(REPORT_TIMEZONE).format('YYYY-MM-DD HH:mm:ss')))].sort();
       
-      // Pre-process data into a map for O(1) lookup: key = deviceId-timestamp
       const dataMap = new Map();
       data.forEach(d => {
         const time = dayjs.utc(d.timestamp).tz(REPORT_TIMEZONE).format('YYYY-MM-DD HH:mm:ss');
@@ -409,7 +425,8 @@ export class ReportsService {
       });
       return filePath;
     } finally {
-      await browser.close();
+      if (page) await page.close();
     }
   }
 }
+

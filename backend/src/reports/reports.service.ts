@@ -164,6 +164,17 @@ export class ReportsService implements OnModuleDestroy {
     }
   }
 
+  private downsampleForChart(data: any[], maxPoints: number = 500): any[] {
+    const uniqueTimestamps = [...new Set(data.map(d => d.timestamp))].sort();
+    if (uniqueTimestamps.length <= maxPoints) return data;
+
+    const factor = Math.ceil(uniqueTimestamps.length / maxPoints);
+    const sampledTimestamps = uniqueTimestamps.filter((_, i) => i % factor === 0);
+    const sampledSet = new Set(sampledTimestamps);
+
+    return data.filter(d => sampledSet.has(d.timestamp));
+  }
+
   async generateExcel(data: any[], fileName: string): Promise<string> {
     const workbook = new ExcelJS.Workbook();
     const devices = [...new Set(data.map((item) => item.device_id || item.deviceId || 'Unknown'))];
@@ -196,13 +207,15 @@ export class ReportsService implements OnModuleDestroy {
 
     try {
       page = await browser.newPage();
-      page.setDefaultNavigationTimeout(30000);
-      page.setDefaultTimeout(30000);
+      page.setDefaultNavigationTimeout(180000);
+      page.setDefaultTimeout(180000);
       
-      const chartLabels = [...new Set(data.map((d) => dayjs.utc(d.timestamp).tz(REPORT_TIMEZONE).format('YYYY-MM-DD HH:mm:ss')))].sort();
+      // Downsample data for the chart to keep Puppeteer happy
+      const sampledData = this.downsampleForChart(data, 1000);
+      const chartLabels = [...new Set(sampledData.map((d) => dayjs.utc(d.timestamp).tz(REPORT_TIMEZONE).format('YYYY-MM-DD HH:mm:ss')))].sort();
       
       const dataMap = new Map();
-      data.forEach(d => {
+      sampledData.forEach(d => {
         const time = dayjs.utc(d.timestamp).tz(REPORT_TIMEZONE).format('YYYY-MM-DD HH:mm:ss');
         const id = d.device_id || d.deviceId || 'Unknown';
         dataMap.set(`${id}-${time}`, Number(d.apparentPower || d.apparent_power || d.kva) || 0);
@@ -240,9 +253,12 @@ export class ReportsService implements OnModuleDestroy {
             </script>
           </body>
         </html>
-      `, { waitUntil: 'networkidle0' });
+      `, { waitUntil: 'networkidle2', timeout: 180000 });
 
-      const chartBuffer = await page.screenshot({ clip: { x: 0, y: 0, width: 800, height: 400 } });
+      const chartBuffer = await page.screenshot({ 
+        clip: { x: 0, y: 0, width: 800, height: 400 },
+        timeout: 10000
+      });
 
       const imageId = workbook.addImage({
         buffer: Buffer.from(chartBuffer) as any,
@@ -297,8 +313,8 @@ export class ReportsService implements OnModuleDestroy {
 
     try {
       page = await browser.newPage();
-      page.setDefaultNavigationTimeout(30000);
-      page.setDefaultTimeout(30000);
+      page.setDefaultNavigationTimeout(180000);
+      page.setDefaultTimeout(180000);
       const devices = [...new Set(data.map((item) => item.device_id || item.deviceId || 'Unknown'))];
       const summary = devices.map((deviceId) => {
         const deviceData = data.filter((item) => (item.device_id || item.deviceId || 'Unknown') === deviceId);
@@ -311,10 +327,12 @@ export class ReportsService implements OnModuleDestroy {
         };
       });
 
-      const chartLabels = [...new Set(data.map((d) => dayjs.utc(d.timestamp).tz(REPORT_TIMEZONE).format('YYYY-MM-DD HH:mm:ss')))].sort();
+      // Downsample data for the chart
+      const sampledData = this.downsampleForChart(data, 1000);
+      const chartLabels = [...new Set(sampledData.map((d) => dayjs.utc(d.timestamp).tz(REPORT_TIMEZONE).format('YYYY-MM-DD HH:mm:ss')))].sort();
       
       const dataMap = new Map();
-      data.forEach(d => {
+      sampledData.forEach(d => {
         const time = dayjs.utc(d.timestamp).tz(REPORT_TIMEZONE).format('YYYY-MM-DD HH:mm:ss');
         const id = d.device_id || d.deviceId || 'Unknown';
         dataMap.set(`${id}-${time}`, Number(d.apparentPower || d.apparent_power || d.kva) || 0);
@@ -413,7 +431,7 @@ export class ReportsService implements OnModuleDestroy {
         </html>
       `;
 
-      await page.setContent(html, { waitUntil: 'networkidle0' });
+      await page.setContent(html, { waitUntil: 'networkidle2', timeout: 180000 });
       const reportsDir = path.join(process.cwd(), 'reports');
       if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir, { recursive: true });
       const filePath = path.join(reportsDir, `${fileName}.pdf`);

@@ -12,6 +12,9 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
   private readonly port: number;
   private readonly isSimulation: boolean;
   
+  private consecutiveTimeouts = 0;
+  private readonly MAX_CONSECUTIVE_TIMEOUTS = 3;
+  
   // Serialization lock to ensure only one Modbus operation happens at a time
   private lock = Promise.resolve();
 
@@ -41,10 +44,13 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
       this.connected = false;
       
       try {
-        await new Promise<void>((resolve) => {
-          oldClient.removeAllListeners();
-          oldClient.close(() => resolve());
-        });
+        await Promise.race([
+          new Promise<void>((resolve) => {
+            oldClient.removeAllListeners();
+            oldClient.close(() => resolve());
+          }),
+          new Promise<void>((resolve) => setTimeout(resolve, 2000)), // 2s timeout for cleanup
+        ]);
       } catch (e) {
         // Ignore close errors
       }
@@ -77,12 +83,17 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
         }
       });
 
-      await newClient.connectTCP(this.ip, { port: this.port });
+      await Promise.race([
+        newClient.connectTCP(this.ip, { port: this.port }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Connection timeout')), 10000)),
+      ]);
+
       newClient.setID(1);
-      newClient.setTimeout(5000);
+      newClient.setTimeout(180000);
       
       this.client = newClient;
       this.connected = true;
+      this.consecutiveTimeouts = 0;
       this.logger.log(`Connected successfully to ${this.ip}:${this.port}`);
     } catch (error) {
       this.connected = false;
@@ -125,9 +136,15 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
       }
     } 
     // Timeout is handled differently - it might just be the gateway is busy
-    // We don't drop the connection immediately unless it happens too many times (optional)
-    else if (msg.includes('Timeout')) {
+    else if (msg.includes('Timeout') || msg.includes('timed out')) {
       this.logger.warn(`Modbus timeout: ${msg}`);
+      this.consecutiveTimeouts++;
+      if (this.consecutiveTimeouts >= this.MAX_CONSECUTIVE_TIMEOUTS) {
+        this.logger.error(`Too many consecutive timeouts (${this.consecutiveTimeouts}). Forcing reconnect...`);
+        this.consecutiveTimeouts = 0;
+        this.connected = false;
+        this.connect();
+      }
     }
   }
 
@@ -146,6 +163,8 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
       this.client.setID(deviceId);
       await new Promise((resolve) => setTimeout(resolve, 20));
       const result = await this.client.readHoldingRegisters(startAddress, length);
+      
+      this.consecutiveTimeouts = 0; // Reset on success
       return result.data;
     } catch (error) {
       this.handleError(error);
@@ -203,6 +222,7 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
       await new Promise((resolve) => setTimeout(resolve, 20));
       const result = await this.client.readHoldingRegisters(startAddress, count * 2);
       
+      this.consecutiveTimeouts = 0; // Reset on success
       const floats: number[] = [];
       for (let i = 0; i < count; i++) {
         const buffer = Buffer.alloc(4);

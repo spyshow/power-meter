@@ -256,8 +256,7 @@ export class ReportsService implements OnModuleDestroy {
       `, { waitUntil: 'networkidle2', timeout: 180000 });
 
       const chartBuffer = await page.screenshot({ 
-        clip: { x: 0, y: 0, width: 800, height: 400 },
-        timeout: 10000
+        clip: { x: 0, y: 0, width: 800, height: 400 }
       });
 
       const imageId = workbook.addImage({

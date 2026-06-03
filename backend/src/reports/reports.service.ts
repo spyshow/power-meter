@@ -164,15 +164,24 @@ export class ReportsService implements OnModuleDestroy {
     }
   }
 
-  private downsampleForChart(data: any[], maxPoints: number = 500): any[] {
-    const uniqueTimestamps = [...new Set(data.map(d => d.timestamp))].sort();
-    if (uniqueTimestamps.length <= maxPoints) return data;
+  private downsampleForChart(data: any[], maxTotalPoints: number = 2000): any[] {
+    if (data.length === 0) return data;
 
-    const factor = Math.ceil(uniqueTimestamps.length / maxPoints);
+    const devices = [...new Set(data.map(d => d.device_id || d.deviceId || 'Unknown'))];
+    const numDevices = devices.length || 1;
+    const maxPointsPerDevice = Math.floor(maxTotalPoints / numDevices);
+    
+    const uniqueTimestamps = [...new Set(data.map(d => d.timestamp))].sort((a: any, b: any) => {
+      return new Date(a).getTime() - new Date(b).getTime();
+    });
+
+    if (uniqueTimestamps.length <= maxPointsPerDevice) return data;
+
+    const factor = Math.ceil(uniqueTimestamps.length / maxPointsPerDevice);
     const sampledTimestamps = uniqueTimestamps.filter((_, i) => i % factor === 0);
-    const sampledSet = new Set(sampledTimestamps);
+    const sampledSet = new Set(sampledTimestamps.map(t => new Date(t).getTime()));
 
-    return data.filter(d => sampledSet.has(d.timestamp));
+    return data.filter(d => sampledSet.has(new Date(d.timestamp).getTime()));
   }
 
   async generateExcel(data: any[], fileName: string): Promise<string> {
@@ -207,11 +216,8 @@ export class ReportsService implements OnModuleDestroy {
 
     try {
       page = await browser.newPage();
-      page.setDefaultNavigationTimeout(180000);
-      page.setDefaultTimeout(180000);
-      
-      // Downsample data for the chart to keep Puppeteer happy
-      const sampledData = this.downsampleForChart(data, 1000);
+      // Use a more reasonable total points for the chart
+      const sampledData = this.downsampleForChart(data, 2000);
       const chartLabels = [...new Set(sampledData.map((d) => dayjs.utc(d.timestamp).tz(REPORT_TIMEZONE).format('YYYY-MM-DD HH:mm:ss')))].sort();
       
       const dataMap = new Map();
@@ -231,29 +237,37 @@ export class ReportsService implements OnModuleDestroy {
         };
       });
 
+      // Set minimal HTML first
       await page.setContent(`
         <html>
-          <head><script src="https://cdn.jsdelivr.net/npm/chart.js"></script></head>
+          <head>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          </head>
           <body>
             <div style="width: 800px; height: 400px;"><canvas id="myChart"></canvas></div>
-            <script>
-              const ctx = document.getElementById('myChart').getContext('2d');
-              new Chart(ctx, {
-                type: 'line',
-                data: {
-                  labels: ${JSON.stringify(chartLabels)},
-                  datasets: ${JSON.stringify(datasets)}
-                },
-                options: {
-                  devicePixelRatio: 2,
-                  animation: false,
-                  scales: { y: { beginAtZero: true } }
-                }
-              });
-            </script>
           </body>
         </html>
-      `, { waitUntil: 'networkidle2', timeout: 180000 });
+      `, { waitUntil: 'load', timeout: 60000 });
+
+      // Pass data via evaluate to avoid huge strings in setContent
+      await page.evaluate((labels, ds) => {
+        const ctx = (document.getElementById('myChart') as any).getContext('2d');
+        new (window as any).Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: ds
+          },
+          options: {
+            devicePixelRatio: 2,
+            animation: false,
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+      }, chartLabels, datasets);
+
+      // Wait a bit for the chart to be fully drawn (though animation is false)
+      await new Promise(r => setTimeout(r, 500));
 
       const chartBuffer = await page.screenshot({ 
         clip: { x: 0, y: 0, width: 800, height: 400 }
@@ -312,8 +326,7 @@ export class ReportsService implements OnModuleDestroy {
 
     try {
       page = await browser.newPage();
-      page.setDefaultNavigationTimeout(180000);
-      page.setDefaultTimeout(180000);
+      
       const devices = [...new Set(data.map((item) => item.device_id || item.deviceId || 'Unknown'))];
       const summary = devices.map((deviceId) => {
         const deviceData = data.filter((item) => (item.device_id || item.deviceId || 'Unknown') === deviceId);
@@ -326,8 +339,8 @@ export class ReportsService implements OnModuleDestroy {
         };
       });
 
-      // Downsample data for the chart
-      const sampledData = this.downsampleForChart(data, 1000);
+      // Use a more reasonable total points for the chart
+      const sampledData = this.downsampleForChart(data, 2000);
       const chartLabels = [...new Set(sampledData.map((d) => dayjs.utc(d.timestamp).tz(REPORT_TIMEZONE).format('YYYY-MM-DD HH:mm:ss')))].sort();
       
       const dataMap = new Map();
@@ -355,7 +368,9 @@ export class ReportsService implements OnModuleDestroy {
         </tr>
       ` : '';
 
-      const tableRows = data.map((row) => `
+      // Limit table rows in PDF to avoid Puppeteer crash/timeout for massive data
+      const displayData = data.length > 5000 ? data.slice(0, 5000) : data;
+      const tableRows = displayData.map((row) => `
         <tr>
           ${Object.entries(row).map(([key, val]) => {
             let displayVal = val;
@@ -384,6 +399,7 @@ export class ReportsService implements OnModuleDestroy {
               th { background-color: #f4f7f6; color: #666; font-weight: 600; }
               tr:nth-child(even) { background-color: #fafafa; }
               .page-break { page-break-before: always; }
+              .limit-notice { text-align: center; color: #e74c3c; font-style: italic; margin-top: 10px; font-size: 10px; }
             </style>
           </head>
           <body>
@@ -400,37 +416,44 @@ export class ReportsService implements OnModuleDestroy {
               `).join('')}
             </div>
             <div class="chart-container"><canvas id="trendChart"></canvas></div>
-            <script>
-              const ctx = document.getElementById('trendChart').getContext('2d');
-              new Chart(ctx, {
-                type: 'line',
-                data: {
-                  labels: ${JSON.stringify(chartLabels)},
-                  datasets: ${JSON.stringify(datasets)}
-                },
-                options: {
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    title: { display: true, text: 'Apparent Power Trend (kVA)' },
-                    legend: { position: 'bottom' }
-                  },
-                  scales: {
-                    y: { beginAtZero: true, title: { display: true, text: 'kVA' } },
-                    x: { ticks: { maxRotation: 45, minRotation: 45, font: { size: 8 } } }
-                  },
-                  animation: false
-                }
-              });
-            </script>
             <div class="page-break"></div>
-            <h2>Detailed Telemetry Data</h2>
+            <h2>Detailed Telemetry Data ${data.length > 5000 ? '(First 5000 rows)' : ''}</h2>
+            ${data.length > 5000 ? '<p class="limit-notice">Note: Large report truncated to 5000 rows for PDF. Use Excel for full data.</p>' : ''}
             <table>${tableHeaders}${tableRows}</table>
           </body>
         </html>
       `;
 
-      await page.setContent(html, { waitUntil: 'networkidle2', timeout: 180000 });
+      await page.setContent(html, { waitUntil: 'load', timeout: 60000 });
+
+      // Render chart via evaluate
+      await page.evaluate((labels, ds) => {
+        const ctx = (document.getElementById('trendChart') as any).getContext('2d');
+        new (window as any).Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: ds
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              title: { display: true, text: 'Apparent Power Trend (kVA)' },
+              legend: { position: 'bottom' }
+            },
+            scales: {
+              y: { beginAtZero: true, title: { display: true, text: 'kVA' } },
+              x: { ticks: { maxRotation: 45, minRotation: 45, font: { size: 8 } } }
+            },
+            animation: false
+          }
+        });
+      }, chartLabels, datasets);
+
+      // Wait for rendering
+      await new Promise(r => setTimeout(r, 500));
+
       const reportsDir = path.join(process.cwd(), 'reports');
       if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir, { recursive: true });
       const filePath = path.join(reportsDir, `${fileName}.pdf`);

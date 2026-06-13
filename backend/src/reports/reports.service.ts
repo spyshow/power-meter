@@ -111,7 +111,6 @@ export class ReportsService implements OnModuleDestroy {
           AND timestamp >= ${startStr}
           AND timestamp <= ${endStr}
         ORDER BY timestamp ASC
-        LIMIT 100000
       `;
       const result = await this.db.execute(query);
       const rows = result.rows || result;
@@ -128,7 +127,7 @@ export class ReportsService implements OnModuleDestroy {
       else if (params.range === '6h') interval = '5 minutes';
       else if (params.range === '1h') interval = '1 minute';
 
-      const binnedSelect = metrics.map(m => `AVG(${this.mapMetricToColumn(m)}) as "${m}_raw"`).join(', ');
+      const binnedSelect = metrics.map(m => `MAX(${this.mapMetricToColumn(m)}) as "${m}_raw"`).join(', ');
 
       const query = sql`
         SELECT
@@ -164,24 +163,51 @@ export class ReportsService implements OnModuleDestroy {
     }
   }
 
-  private downsampleForChart(data: any[], maxTotalPoints: number = 2000): any[] {
-    if (data.length === 0) return data;
+  /**
+   * Downsample data for PDF by keeping the MAX value of each metric per time window.
+   * This preserves peak values instead of averaging, so the report shows worst-case readings.
+   */
+  private downsampleWithMax(data: any[], maxRows: number = 10000): any[] {
+    if (data.length === 0 || data.length <= maxRows) return data;
 
     const devices = [...new Set(data.map(d => d.device_id || d.deviceId || 'Unknown'))];
     const numDevices = devices.length || 1;
-    const maxPointsPerDevice = Math.floor(maxTotalPoints / numDevices);
-    
-    const uniqueTimestamps = [...new Set(data.map(d => d.timestamp))].sort((a: any, b: any) => {
-      return new Date(a).getTime() - new Date(b).getTime();
-    });
+    const maxRowsPerDevice = Math.floor(maxRows / numDevices);
 
-    if (uniqueTimestamps.length <= maxPointsPerDevice) return data;
+    const result: any[] = [];
 
-    const factor = Math.ceil(uniqueTimestamps.length / maxPointsPerDevice);
-    const sampledTimestamps = uniqueTimestamps.filter((_, i) => i % factor === 0);
-    const sampledSet = new Set(sampledTimestamps.map(t => new Date(t).getTime()));
+    for (const deviceId of devices) {
+      const deviceData = data.filter(d => (d.device_id || d.deviceId || 'Unknown') === deviceId);
 
-    return data.filter(d => sampledSet.has(new Date(d.timestamp).getTime()));
+      if (deviceData.length <= maxRowsPerDevice) {
+        result.push(...deviceData);
+        continue;
+      }
+
+      const windowSize = Math.ceil(deviceData.length / maxRowsPerDevice);
+      const metricKeys = Object.keys(deviceData[0]).filter(k =>
+        !['device_id', 'deviceId', 'timestamp', 'id'].includes(k)
+      );
+
+      for (let i = 0; i < deviceData.length; i += windowSize) {
+        const window = deviceData.slice(i, i + windowSize);
+
+        // Use the window's first timestamp and MAX of each metric
+        const maxRow: any = {
+          device_id: deviceId,
+          timestamp: window[0].timestamp,
+        };
+
+        for (const key of metricKeys) {
+          const values = window.map(r => Number(r[key])).filter(v => !isNaN(v));
+          maxRow[key] = values.length > 0 ? Math.round(Math.max(...values) * 100) / 100 : null;
+        }
+
+        result.push(maxRow);
+      }
+    }
+
+    return result.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
   }
 
   async generateExcel(data: any[], fileName: string): Promise<string> {
@@ -217,7 +243,7 @@ export class ReportsService implements OnModuleDestroy {
     try {
       page = await browser.newPage();
       // Use a more reasonable total points for the chart
-      const sampledData = this.downsampleForChart(data, 2000);
+      const sampledData = this.downsampleWithMax(data, 2000);
       const chartLabels = [...new Set(sampledData.map((d) => dayjs.utc(d.timestamp).tz(REPORT_TIMEZONE).format('YYYY-MM-DD HH:mm:ss')))].sort();
       
       const dataMap = new Map();
@@ -340,7 +366,7 @@ export class ReportsService implements OnModuleDestroy {
       });
 
       // Use a more reasonable total points for the chart
-      const sampledData = this.downsampleForChart(data, 2000);
+      const sampledData = this.downsampleWithMax(data, 2000);
       const chartLabels = [...new Set(sampledData.map((d) => dayjs.utc(d.timestamp).tz(REPORT_TIMEZONE).format('YYYY-MM-DD HH:mm:ss')))].sort();
       
       const dataMap = new Map();
@@ -368,8 +394,8 @@ export class ReportsService implements OnModuleDestroy {
         </tr>
       ` : '';
 
-      // Limit table rows in PDF to avoid Puppeteer crash/timeout for massive data
-      const displayData = data.length > 5000 ? data.slice(0, 5000) : data;
+      // Downsample for PDF table: keep MAX values per window to preserve peaks
+      const displayData = this.downsampleWithMax(data, 10000);
       const tableRows = displayData.map((row) => `
         <tr>
           ${Object.entries(row).map(([key, val]) => {
@@ -417,8 +443,8 @@ export class ReportsService implements OnModuleDestroy {
             </div>
             <div class="chart-container"><canvas id="trendChart"></canvas></div>
             <div class="page-break"></div>
-            <h2>Detailed Telemetry Data ${data.length > 5000 ? '(First 5000 rows)' : ''}</h2>
-            ${data.length > 5000 ? '<p class="limit-notice">Note: Large report truncated to 5000 rows for PDF. Use Excel for full data.</p>' : ''}
+            <h2>Detailed Telemetry Data ${displayData.length < data.length ? `(${displayData.length} peak-sampled rows from ${data.length} total)` : ''}</h2>
+            ${displayData.length < data.length ? '<p class="limit-notice">Note: Large dataset downsampled for PDF using MAX values to preserve peaks. Use Excel for full raw data.</p>' : ''}
             <table>${tableHeaders}${tableRows}</table>
           </body>
         </html>
